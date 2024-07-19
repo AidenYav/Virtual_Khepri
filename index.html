@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My WebAR Experience</title>
+    <!-- Include AR.js and A-Frame -->
+    <script src="node_modules/aframe.min.js"></script>
+    <script src="node_modules/aframe-ar.js"></script>
+    <script src="node_modules/opencv.js"></script>
+    <script src="node_modules/hammerjs/hammer.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <!-- <script type="module" src="node_modules/hammerjs/hammer.min.js"></script> -->
+    <script type = "module" src ="custom.js"></script>
+</head>
+<body>
+
+    <!-- Create an AR scene -->
+    <a-scene embedded arjs=" sourceType: webcam; debugUIEnabled: false;" id="screen">
+        <!-- <a-box position="0 0 -1" color="white" id = "cube"></a-box>  -->
+        <a-entity gltf-model="Models/Pyramid.glb" position="0 0 -4" scale="1 1 1" rotation = "-90 0 0" id="model"></a-entity>
+        <!-- Display the camera feed -->
+        <a-entity camera ></a-entity>
+    </a-scene >
+    <button id="button">Hello World</button>
+</body>
+</html>
