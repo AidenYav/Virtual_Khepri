@@ -88,13 +88,29 @@ function rotate_x_axis(factor) {
     // }
 }
 
+async function animataion(axis, distance, time) {
+    time *= 1000
+    const frame_total = 100
+    //Delay timer
+    for(let i =0; i<frame_total; i++){
+        if (axis == "z"){
+            model.object3D.position.z += distance / frame_total
+        }
+        else{
+            model.object3D.position.x += distance / frame_total
+        }
+        await new Promise((resolve) => setTimeout(resolve, time/frame_total));
+    }
+    
 
+  }
 
+const unit_multiplier = 0.3
 window.move_forward = function(distance){
-    model.object3D.position.z += distance;
+    animataion("z", distance * unit_multiplier, 0.5)
 };
 window.move_strafe = function(distance){
-    model.object3D.position.x += distance;
+    animataion("x", distance * unit_multiplier, 0.5)
 };
 
 
