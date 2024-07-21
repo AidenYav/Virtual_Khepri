@@ -8,7 +8,7 @@ else{
     console.log("screen Identified")
 }
 const hammer = new Hammer(screen); // Create an instance of Hammer with the reference
-console.log("Hello World!")
+// console.log("Hello World!")
 hammer.get('pan').set({ direction: Hammer.DIRECTION_ALL });
 
 const model = document.getElementById("model")
@@ -75,17 +75,28 @@ hammer.on("panleft panright panup pandown tap press", function(ev) {
 function rotate_x_axis(factor) {
     let y_rotation = Math.abs(radians_to_degrees(model.object3D.rotation.y));
     // console.log(y_rotation % 180)
-    // if (y_rotation % 180 < 90){
-        model.object3D.rotation.x = clamp(model.object3D.rotation.x + rotationSpeed * factor, 
-            x_offset - max_x_rotation, 
-            x_offset + max_x_rotation)
-    // }
+    factor *= y_rotation % 360 < 180 ?  1 : -1;
+        
+    
+    model.object3D.rotation.x = clamp(model.object3D.rotation.x + rotationSpeed * factor, 
+        x_offset - max_x_rotation, 
+        x_offset + max_x_rotation)
     // else{
     //     model.object3D.rotation.z = clamp(model.object3D.rotation.z + rotationSpeed * factor, 
     //         -max_x_rotation, 
     //         max_x_rotation)
     // }
 }
+
+
+
+window.move_forward = function(distance){
+    model.object3D.position.z += distance;
+};
+window.move_strafe = function(distance){
+    model.object3D.position.x += distance;
+};
+
 
 //Positive should be a 
 function rotate_y_axis(factor) {
@@ -105,26 +116,3 @@ function degrees_to_radians(degrees) {
 
 //Clamp function
 const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
-// AFRAME.registerComponent("rotate-on-swipe", {
-//     init: function () {
-//         console.debug("Activated!")
-//         const model = this.el; // Reference to your 3D model entity
-//         const rotationSpeed = 0.02; // Adjust as needed
-
-//         // Detect swipe gestures using Hammer.js (or any other gesture library)
-//         hammertime = new Hammer(screen)
-//         hammertime.on("swipe", (ev) => {
-//             switch (ev.direction) {
-//                 case Hammer.DIRECTION_LEFT:
-//                     model.object3D.rotation.y += rotationSpeed;
-//                     break;
-//                 case Hammer.DIRECTION_RIGHT:
-//                     model.object3D.rotation.y -= rotationSpeed;
-//                     break;
-//                 // Add more cases for up and down if desired
-//                 default:
-//                     break;
-//             }
-//         });
-//     },
-// });

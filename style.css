@@ -1,5 +1,33 @@
+#bottom_bar{
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    width: 100%;
+    height: 10%;
+    background-color: cyan;
+    opacity: 0.75;
+}
+
+#icon{
+    position: relative;
+    left: 50%;
+    top: 0;
+    width: 100px;
+    height: 100px;
+    text-align: center;
+    text-size-adjust: 50;
+    /* background-color: yellow; */
+    font-size: 2.5em;
+    font-family: sans-serif
+}
+
 #button {
     position:absolute;
-    left: 500px;
-    top: 500px;
+    left: 50%;
+    top: 50%;
+}
+
+.hidden {
+    visibility: hidden;
 }
