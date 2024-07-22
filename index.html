@@ -21,6 +21,7 @@
     <!-- Local and homemade files -->
     <link rel="stylesheet" href="style.css">
     <script type = "module" src ="custom.js"></script>
+    <script type = "module" src ="Block.js"></script>
     <script type = "text/javascript" src="UserInterface.js"></script>
 </head>
 <body>
@@ -36,13 +37,36 @@
         <a-entity camera id="camera"></a-entity>
     </a-scene >
     <div id="bottom_bar">
-        <text id="icon" onclick="toggleBar()">^</text>
-        <div class="hidden" id="button_container">
-            <button  onclick="move_forward(-1)">Forward</button>
-            <button  onclick="move_forward(1)">Backward</button>
-            <button  onclick="move_strafe(-1)">Left</button>
-            <button  onclick="move_strafe(1)">Right</button>
+        <p id="icon" onclick="toggleBar()">^</p>
+        <div id="workspace_area"><!-- This is the container for the entire workspace area  -->
+            
+            <div class="hidden" id="button_container">
+
+                    <button  onclick="compile()">Run</button>
+                    <button  onclick="deleteBlock()">Delete</button>
+                <br>
+
+                    <button  onclick="move_forward(-1)">Forward</button>
+                    <button  onclick="move_forward(1)">Backward</button>
+                    <button  onclick="move_strafe(-1)">Left</button>
+                    <button  onclick="move_strafe(1)">Right</button>
+                <br>
+
+                    <button  onclick="move_rotate(90)">Turn Left</button>
+                    <button  onclick="move_rotate(-90)">Turn Right</button>
+                <br>
+
+                    <input type="checkbox" id="FC_checkbox">
+                    <label for="FC_checkbox">Field Centric Active</label>
+            </div>
+            
+
+            <div class="hidden" id="editor_view">
+                <!--  This will be the editor space? -->
+
+            </div>
         </div>
+        <!-- </div> -->
     </div>
     
 </body>

@@ -1,3 +1,5 @@
+import BlockCompiler, { Direction, Type, degrees_to_radians, radians_to_degrees } from "./Block.js";
+
 console.log("Hello World!")
 // import * as Hammer from './node_modules/hammerjs/hammer.js';
 const screen = document.getElementById('screen'); // Get a reference to an element
@@ -77,44 +79,38 @@ function rotate_x_axis(factor) {
     // console.log(y_rotation % 180)
     factor *= y_rotation % 360 < 180 ?  1 : -1;
         
-    
     model.object3D.rotation.x = clamp(model.object3D.rotation.x + rotationSpeed * factor, 
         x_offset - max_x_rotation, 
         x_offset + max_x_rotation)
-    // else{
-    //     model.object3D.rotation.z = clamp(model.object3D.rotation.z + rotationSpeed * factor, 
-    //         -max_x_rotation, 
-    //         max_x_rotation)
-    // }
 }
 
-async function animataion(axis, distance, time) {
-    time *= 1000
-    const frame_total = 100
-    //Delay timer
-    for(let i =0; i<frame_total; i++){
-        if (axis == "z"){
-            model.object3D.position.z += distance / frame_total
-        }
-        else{
-            model.object3D.position.x += distance / frame_total
-        }
-        await new Promise((resolve) => setTimeout(resolve, time/frame_total));
-    }
-    
 
-  }
+const compiler = new BlockCompiler(model);
 
 const unit_multiplier = 0.3
 window.move_forward = function(distance){
-    animataion("z", distance * unit_multiplier, 0.5)
+    distance *= unit_multiplier;
+    compiler.AddBlocks(Direction.Forward, distance, Type.Translation);
 };
 window.move_strafe = function(distance){
-    animataion("x", distance * unit_multiplier, 0.5)
+    distance *= unit_multiplier
+    compiler.AddBlocks(Direction.Left, distance, Type.Translation);
+};
+
+window.move_rotate = function(degrees){
+    compiler.AddBlocks(Direction.Clockwise, degrees, Type.Rotation)
+}
+
+
+window.compile = function(){
+    compiler.CompileBlocks();
+};
+window.deleteBlock = function(){
+    compiler.RemoveBlocks();
 };
 
 
-//Positive should be a 
+
 function rotate_y_axis(factor) {
     let rotation = model.object3D.rotation.y;
     rotation += rotationSpeed * factor
@@ -122,13 +118,6 @@ function rotate_y_axis(factor) {
     model.object3D.rotation.y = rotation
 }
 
-function radians_to_degrees(radians) {
-    return radians * (180 / Math.PI) % 360;
-}
-
-function degrees_to_radians(degrees) {
-    return degrees * (Math.PI / 180);
-}
 
 //Clamp function
 const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
