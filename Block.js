@@ -12,35 +12,116 @@ export const Type = {
 //Class object for a compiled version of blocks
 export default class BlockCompiler{
 
-    constructor(object){
+    //------------------------------------------------------------Core functions for program-----------------------------------------------------------
+    constructor(object, list){
         this.queue = [];
-        this.object = object.object3D
+        this.object = object.object3D;
+        this.command_list =  list;
+        this.selectedIndex = 0; //This starts at 0, but
+        
         // console.log(this.object3D)
     }
 
     AddBlocks(direction, magnitude, type){
-        this.queue.push(new Block(direction, magnitude, type));
+        //Adds the block command to the "queue" which is what actually runs the program
+        this.queue.splice(this.selectedIndex, 0, new Block(direction, magnitude, type));
+
+        //Adds UI elements for visualization of program.
+        //This is isolated from the actual program running
+        this.add_ui(this.block_text(direction,magnitude),this.command_list.children[this.selectedIndex]);
+
+        //Increments the selected index counter and adds a visual effect to mark the current element
+        this.highlightElement(this.selectedIndex + 1);
     }
 
     RemoveBlocks(){
-        this.queue.pop();
-    }
+        //Defensive check, index should not be less than 1
+        if (this.selectedIndex < 1){return;}
+        this.queue.splice(this.selectedIndex - 1, 1);
+        this.command_list.children[this.selectedIndex].remove();
+        this.highlightElement(this.selectedIndex  - 1);
 
-    CompileBlocks(){
-        let LastRunTime = Date.now();
+    }
+    
+    CompileBlocks(field_centric = false){
+
         for(let i=0; i<this.queue.length; i++){
             //Necessary for scopes for some reason
-            let block = this.queue[i];
-            let object = this.object
+            let self = this;
             //Schedules the execution order of blocks
             //Each block is set to be animated in sequential order
             setTimeout(
                 function(){
-                    block.ActivateBlock(object);
+                    self.highlightElement(i+1)
+                    self.queue[i].ActivateBlock(self.object);
                 }, 
             animation_duration*i + 10);
         }
     }
+
+
+    //--------------------------------------------Helper functions for effects and UI-----------------------------------------------------
+
+    add_ui(text, referenceElement){
+        //Creates a new label
+        var newLabel = document.createElement("label");
+        newLabel.className = "command selected";
+        newLabel.textContent = text;
+        newLabel.onclick = () => {
+            this.highlightElement(this.find_element_index(this.command_list, newLabel));
+        };
+        
+        //Wraps the label in a list object
+        var newListItem = document.createElement("li");
+        newListItem.appendChild(newLabel);
+    
+        //Place the element in the list
+        referenceElement.insertAdjacentElement("afterend",newListItem);
+        //Disables previous index's selected highlight
+        // this.command_list.children[this.selectedIndex].firstChild.classList.toggle("selected", false);
+    }
+
+    find_element_index(parent, target){
+        const list = parent.children;
+        for(let i=1; i < list.length; i++){
+            if (list[i].firstChild === target){
+                return i;
+            }
+        }
+        console.warn("Element could not be found!")
+        return -1;
+    }
+
+    highlightElement(idx){
+        //idx should not be less than 1 since index 1 is the start UI, which cannot/should not be changed and will not be highlighted.
+        if (idx < 1){ return;}
+        //Removes previous index highlight
+        this.command_list.children[this.selectedIndex].firstChild.classList.toggle("selected", false);
+        //Sets highlight to new element
+        this.selectedIndex = idx;
+        this.command_list.children[idx].firstChild.classList.toggle("selected", true);
+
+        // console.log("Index at: " + idx);
+    }
+
+    block_text(direction,magnitude){
+        let ui_text = "Unknown"
+        switch (direction){
+            case Direction.Forward:
+                ui_text = magnitude < 0 ? "Forward" : "Backward";
+                break;
+            case Direction.Left:
+                ui_text = magnitude < 0 ? "Left" : "Right";
+                break;
+            case Direction.Clockwise:
+                ui_text = magnitude < 0 ? "Turn Right" : "Turn Left";
+                break;
+            default:
+                break;
+        }
+        return ui_text;
+    }
+
 }
 
 
@@ -49,10 +130,11 @@ export default class BlockCompiler{
 class Block{
     
 
-    constructor(direction, magnitude, type) {
+    constructor(direction, magnitude, type, UI) {
         this.direction = direction; // Direction to be moved
         this.magnitude = magnitude; // Distance to be moved
         this.type = type; //Type of movement
+        this.element = UI; //UI Element related to the program block
     }
 
     ActivateBlock(object){
@@ -113,7 +195,7 @@ class Block{
 
 
 
-const animation_duration = 1000; //ms
+const animation_duration = 500; //ms
 let start;
 let anim_complete = false;
 

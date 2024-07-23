@@ -85,12 +85,15 @@ function rotate_x_axis(factor) {
 }
 
 
-const compiler = new BlockCompiler(model);
+const compiler = new BlockCompiler(model,document.getElementById("command_list"));
 
 const unit_multiplier = 0.3
 window.move_forward = function(distance){
     distance *= unit_multiplier;
     compiler.AddBlocks(Direction.Forward, distance, Type.Translation);
+
+    // let text = distance < 0 ? "Forward" : "Backward";
+    // add_command(text,current_command);
 };
 window.move_strafe = function(distance){
     distance *= unit_multiplier
@@ -108,6 +111,31 @@ window.compile = function(){
 window.deleteBlock = function(){
     compiler.RemoveBlocks();
 };
+
+// const command_list = document.getElementById("command_list");
+// let current_command = document.getElementById("start").parentNode;
+// function add_command(text, referenceElement){
+    
+//     //Creates a new label
+//     var newLabel = document.createElement("label");
+//     newLabel.className = "command selected";
+//     newLabel.textContent = text;
+    
+//     //Wraps the label in a list object
+//     var newListItem = document.createElement("li");
+//     newListItem.appendChild(newLabel);
+
+//     //Place the element in the list
+//     referenceElement.insertAdjacentElement("afterend",newListItem);
+
+//     current_command.firstChild.classList.toggle("selected", false);
+//     console.log(current_command.firstChild.classList)
+//     current_command = newListItem;
+    
+    
+//     console.log(command_list.childElementCount);
+
+// }
 
 
 

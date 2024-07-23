@@ -15,14 +15,12 @@
     position: relative;
     left: 0;
     top: 0;
-    /* width: 100px;
-    height: 100px; */
-    height: 0;
+    margin-top: 0;
+    margin-bottom: 0;
     text-align: center;
-    /* text-size-adjust: 0%; */
-    /* background-color: yellow; */
     font-size: 1.5em;
-    font-family: sans-serif
+    font-family: sans-serif;
+    background-color: yellow
 }
 
 #button {
@@ -45,7 +43,7 @@
 }
 
 #editor_view{
-    background-color: lime;
+    background-color: white;
     position: relative;
     opacity: 0.75;
     left : 50%;
@@ -58,4 +56,34 @@
     width: 100%;
     height:100%;
     display: inline;
+}
+
+.text_info{
+    margin: 0;
+    padding-left: 5px;
+    font-weight: bold;
+    color:black
+    
+}
+
+.command{
+    
+    margin-left: 5px;
+    padding-left: 5px;
+    padding-right: 5px;
+    border-color: black;
+    font-weight: bold;
+    color: black;
+    outline: auto;
+}
+
+.selected{
+    background-color: yellow;
+}
+
+#start{
+    background-color: rgb(155, 255, 155);
+}
+#end{
+    background-color: rgb(255, 170, 170);
 }

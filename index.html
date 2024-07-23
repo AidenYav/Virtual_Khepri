@@ -20,7 +20,7 @@
 
     <!-- Local and homemade files -->
     <link rel="stylesheet" href="style.css">
-    <script type = "module" src ="custom.js"></script>
+    <script type = "module" src ="EventHandler.js"></script>
     <script type = "module" src ="Block.js"></script>
     <script type = "text/javascript" src="UserInterface.js"></script>
 </head>
@@ -40,7 +40,7 @@
         <p id="icon" onclick="toggleBar()">^</p>
         <div id="workspace_area"><!-- This is the container for the entire workspace area  -->
             
-            <div class="hidden" id="button_container">
+            <div class="hidden" id="button_container" >
 
                     <button  onclick="compile()">Run</button>
                     <button  onclick="deleteBlock()">Delete</button>
@@ -62,7 +62,12 @@
             
 
             <div class="hidden" id="editor_view">
+                <h4 class="text_info">This is an viewing space. Use the buttons on the side to run your program!</h4> <br>
                 <!--  This will be the editor space? -->
+                <ol id="command_list">
+                    <li><label class="command" id="start">Start</label></li>
+                    <li><label class="command" id="end">End</label></li>
+                </ol>
 
             </div>
         </div>
