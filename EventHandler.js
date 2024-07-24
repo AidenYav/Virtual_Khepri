@@ -18,7 +18,7 @@ const rotationSpeed = 0.0001; // Adjust as needed
 const gravity = 9.8 //meters per second
 const doubleTapThreshold = 300; // Maximum time (in milliseconds) between taps for double tap
 const max_x_rotation = degrees_to_radians(45); 
-const x_offset = degrees_to_radians(-90);
+const x_offset = 0 //degrees_to_radians(-90);
 let lastTapTime = 0;
 let lastRotateTime = 0;
 
@@ -38,7 +38,7 @@ hammer.on("panleft panright panup pandown tap press", function(ev) {
             //console.log('Single tap detected!');
             console.log(radians_to_degrees(model.object3D.rotation.x) +"\n"+ radians_to_degrees(model.object3D.rotation.y) +"\n"+ radians_to_degrees(model.object3D.rotation.z))
         }
-        console.log(currentTime - lastTapTime)
+        // console.log(currentTime - lastTapTime)
         lastTapTime = currentTime;
         
    }
@@ -106,11 +106,19 @@ window.move_rotate = function(degrees){
 
 
 window.compile = function(){
-    compiler.CompileBlocks();
+    compiler.CompileBlocks(document.getElementById("FC_checkbox").checked);
 };
 window.deleteBlock = function(){
     compiler.RemoveBlocks();
 };
+
+window.clearBlocks = function(){
+    compiler.ClearBlocks();
+}
+window.resetObject = function(){
+    compiler.ResetObject();
+}
+
 
 // const command_list = document.getElementById("command_list");
 // let current_command = document.getElementById("start").parentNode;

@@ -28,11 +28,11 @@
 
     <!-- Create an AR scene -->
     <a-scene embedded arjs=" sourceType: webcam; debugUIEnabled: false;" id="screen">
-        <!-- Creates an object using the models folder and displays it on the screen-->
-        <!-- <a-marker type="pattern" url="Markers/pattern-BlackSquare.patt"> -->
-        <!-- <a-marker preset="hiro"> -->
-        <a-entity gltf-model="Models/Pyramid.glb" position="0 0 -4" scale="1 1 1" rotation = "-90 0 0" id="model"></a-entity>
-        <!-- </a-marker> -->
+        <!-- Uses a custom marker to display the model  -->
+        <a-marker preset="custom" type="pattern" url="Markers/pattern-Triangle.patt">
+            <!-- Creates an object using the models folder and displays it on the screen-->
+            <a-entity gltf-model="Models/Pyramid.glb" position="0 0 0" scale="0.5 0.5 0.5" rotation = "0 180 0" id="model"></a-entity>
+        </a-marker>
         <!-- Display the camera feed -->
         <a-entity camera id="camera"></a-entity>
     </a-scene >
@@ -44,6 +44,8 @@
 
                     <button  onclick="compile()">Run</button>
                     <button  onclick="deleteBlock()">Delete</button>
+                    <button  onclick="clearBlocks()">Clear All Blocks</button>
+                    <button  onclick="resetObject()">Reset</button>
                 <br>
 
                     <button  onclick="move_forward(-1)">Forward</button>
@@ -56,7 +58,7 @@
                     <button  onclick="move_rotate(-90)">Turn Right</button>
                 <br>
 
-                    <input type="checkbox" id="FC_checkbox">
+                    <input checked type="checkbox" id="FC_checkbox">
                     <label for="FC_checkbox">Field Centric Active</label>
             </div>
             

@@ -43,7 +43,7 @@ export default class BlockCompiler{
 
     }
     
-    CompileBlocks(field_centric = false){
+    CompileBlocks(field_centric = true){
 
         for(let i=0; i<this.queue.length; i++){
             //Necessary for scopes for some reason
@@ -52,13 +52,28 @@ export default class BlockCompiler{
             //Each block is set to be animated in sequential order
             setTimeout(
                 function(){
-                    self.highlightElement(i+1)
-                    self.queue[i].ActivateBlock(self.object);
+                    self.highlightElement(i+1);
+                    self.queue[i].ActivateBlock(self.object,field_centric);
                 }, 
-            animation_duration*i + 10);
+            (animation_duration + 50)*i);
         }
     }
 
+    ClearBlocks(){
+        //Clears block program
+        this.queue = [];
+        this.selectedIndex = 0;
+        //Clears UI assoiated with blocks
+        for(let i=1; i < this.command_list.children.length - 1; i++){
+            this.command_list.children[i].remove();
+            i--;
+        }
+    }
+
+    ResetObject(){
+        this.object.position.set(0,0,0);
+        this.object.rotation.set(0,Math.PI,0);
+    }
 
     //--------------------------------------------Helper functions for effects and UI-----------------------------------------------------
 
@@ -137,15 +152,22 @@ class Block{
         this.element = UI; //UI Element related to the program block
     }
 
-    ActivateBlock(object){
+    /**
+     * Activates the premade block program to translate or rotate the object
+     * @param {object3D} object                 A passed 3D object to move.
+     * @param {boolean} [field_centric = true]  A boolean that determines if the object should move relative to it's own 
+     *                                          orientation or from the camera's orientation. Defaults to true.
+     * @returns {undefined}                     Does not return anything.
+     */
+    ActivateBlock(object, field_centric = true){
         //Forward drive set up
         if (this.direction === Direction.Forward){
-            setUpAnimCache(object,"z", this.magnitude);
+            setUpAnimCache(object,"z", this.magnitude, field_centric);
         }
 
         //Strafe set up
         else if (this.direction === Direction.Left){
-            setUpAnimCache(object,"x", this.magnitude);
+            setUpAnimCache(object,"x", this.magnitude, field_centric);
         }
 
         //Rotation set up
@@ -165,37 +187,38 @@ class Block{
     }
 
 
-    TranslateBlock(object){
-        if (this.direction === Direction.Forward){
-            setUpAnimCache(object,"z", this.magnitude);
+    // TranslateBlock(object){
+    //     if (this.direction === Direction.Forward){
+    //         setUpAnimCache(object,"z", this.magnitude);
             
-        }
-        else if (this.direction === Direction.Left){
-            setUpAnimCache(object,"x", this.magnitude);
-        }
-        else{
-            console.warn("Tried to translate object in the " + this.direction + " direction!");
-            return;
-        }
-        requestAnimationFrame(anim_translate);
-    }
+    //     }
+    //     else if (this.direction === Direction.Left){
+    //         setUpAnimCache(object,"x", this.magnitude);
+    //     }
+    //     else{
+    //         console.warn("Tried to translate object in the " + this.direction + " direction!");
+    //         return;
+    //     }
+    //     requestAnimationFrame(anim_translate);
+    // }
 
 
-    RotateBlock(object) {
-        if (this.direction === Direction.Clockwise){
-            // object.rotation.y += degrees_to_radians(this.magnitude);
-            setUpAnimCache(object, "y", this.magnitude);
-        }
-        else{
-            console.warn("Tried to rotate object in the " + this.direction + " direction!")
-        }
-        requestAnimationFrame(anim_translate);
-    }
+    // RotateBlock(object) {
+    //     if (this.direction === Direction.Clockwise){
+    //         // object.rotation.y += degrees_to_radians(this.magnitude);
+    //         setUpAnimCache(object, "y", this.magnitude);
+    //     }
+    //     else{
+    //         console.warn("Tried to rotate object in the " + this.direction + " direction!")
+    //     }
+    //     requestAnimationFrame(anim_translate);
+    // }
 }
 
 
 
-const animation_duration = 500; //ms
+const animation_duration = 500; //ms - Duration of each translation/rotation.
+const animation_delay = 50; //ms - Delay between each block activating. Neccessary from having animations overlap and causing buggy animations
 let start;
 let anim_complete = false;
 
@@ -203,26 +226,54 @@ let anim_complete = false;
 //Storage related to information about the animation requirements (since parameters cannot be used)
 const anim_cache = {
     axis : 'z',
-    distance : 1,
+    distance : { "x" : 0 , "y" : 0 , "z": 0},
     model : undefined,
-    start_pos : 0
+    field_centric : true,
+    start_pos : { "x" : 0 , "y" : 0 , "z": 0}
+    
 }
 
 //A function for easily editing the animation cache
-function setUpAnimCache(model, axis, distance){
+function setUpAnimCache(model, axis, distance, field_centric = true){
     anim_cache.model = model;
     anim_cache.axis = axis;
-    anim_cache.distance = distance;
+    anim_cache.field_centric = field_centric;
+
+    
+    //Manipulate distance into x and z components if field centric
+    // console.log(!field_centric,axis != "y");
+
+   //This math is only necesary for translation movements while field_centric is turned off
+    if (!field_centric && axis != "y"){
+        let rotation_offset = Math.PI;
+        //This just sets "otherAxis" to the opposing axis. [axis = x, otherAxis = z] or [axis = z, otherAxis = x]
+        let otherAxis = axis == "x" ? "z" : "x";
+        //When strafing, the directions are inverted. To avoid conflict with FC code, simply invert the direction here
+        let strafe = axis == "x" ? -1 : 1;
+
+        //Calculate the distance for the primary axis
+        anim_cache.distance[axis] = distance * Math.cos(model.rotation.y + rotation_offset);
+        //Calculate the opposite axis
+        anim_cache.distance[otherAxis] = strafe * distance * Math.sin(model.rotation.y  + rotation_offset);
+
+
+        // console.log(axis, anim_cache.distance[axis], otherAxis, anim_cache.distance[otherAxis]);
+    }
+    else{
+        anim_cache.distance["x"] = 0;
+        anim_cache.distance["z"] = 0;
+        anim_cache.distance[axis] = distance;
+    }
+    
     
     //Automatically configure the starting point used by the animator
-    if (axis == "x"){
-        anim_cache.start_pos = model.position.x;
+    if (axis == "x" || axis == "z"){
+        anim_cache.start_pos["x"] = model.position.x;
+        anim_cache.start_pos["z"] = model.position.z;
+        
     }
     else if (axis == "y"){
-        anim_cache.start_pos = model.rotation.y;
-    }
-    else if (axis == "z"){
-        anim_cache.start_pos = model.position.z;
+        anim_cache.start_pos["y"] = model.rotation.y;
     }
     else{
         console.warn("Invalid axis definition as: " + axis);
@@ -242,18 +293,20 @@ function anim_translate(timeStamp){
     //Currently this is a linear rate
     const completion_rate = Math.min(elapsed / animation_duration, 1); 
     
+    // if (!field_centric){}
     //For Left and Right Translation
-    if (anim_cache.axis == "x"){
-        anim_cache.model.position.x = anim_cache.start_pos + anim_cache.distance * completion_rate;
+    if (anim_cache.axis == "x" || anim_cache.axis == "z"){
+        anim_cache.model.position.x = anim_cache.start_pos["x"] + anim_cache.distance["x"] * completion_rate;
+        anim_cache.model.position.z = anim_cache.start_pos["z"] + anim_cache.distance["z"] * completion_rate;
     }
     //For Left and Right Rotation
     else if (anim_cache.axis == "y"){
-        anim_cache.model.rotation.y = anim_cache.start_pos + degrees_to_radians(anim_cache.distance) * completion_rate;
+        anim_cache.model.rotation.y = anim_cache.start_pos["y"] + degrees_to_radians(anim_cache.distance["y"]) * completion_rate;
     }
-    //For Forward and Backward Translation
-    else if (anim_cache.axis == "z"){
-        anim_cache.model.position.z = anim_cache.start_pos + anim_cache.distance * completion_rate;
-    }
+    // //For Forward and Backward Translation
+    // else if (anim_cache.axis == "z"){
+    //     anim_cache.model.position.z = anim_cache.start_pos["z"] + anim_cache.distance * completion_rate;
+    // }
     
     //Should the elapsed time go over the animation duration, end the sequence
     if (elapsed < animation_duration && !anim_complete){
