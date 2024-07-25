@@ -9,11 +9,64 @@ if (screen == null){
 else{
     console.log("screen Identified")
 }
+
 const hammer = new Hammer(screen); // Create an instance of Hammer with the reference
 // console.log("Hello World!")
 hammer.get('pan').set({ direction: Hammer.DIRECTION_ALL });
 
-const model = document.getElementById("model")
+const model = document.getElementById("model");
+const base = document.getElementById("base").object3D;
+// const web_camera = document.getElementById("camera");
+
+
+// const scene = screen.object3D
+
+// console.log(scene)
+const scene = document.getElementById("screen").object3D;
+const camera = new THREE.Camera();
+scene.add(camera);
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+const geo = new THREE.IcosahedronGeometry(1.0, 2);
+const cube = new THREE.BoxGeometry(2,2,2,2,2,2);
+const mat = new THREE.MeshBasicMaterial({
+    color: 0xccff
+})
+const wireMat = new THREE.MeshBasicMaterial({
+    color : 0xffffff,
+    wireframe: true
+})
+model.object3D.add(new THREE.Mesh(cube, wireMat));
+const mesh = new THREE.Mesh(geo, mat);
+mesh.material = wireMat
+
+const planeGeo = new THREE.PlaneGeometry( 10, 10 , 10, 10);
+const material = new THREE.MeshBasicMaterial( {color: 0xff00ff, side: THREE.DoubleSide, transparent : true, opacity : 0.5} );
+const wireframe = new THREE.WireframeGeometry( planeGeo );
+const line = new THREE.LineSegments( wireframe );
+
+const plane = new THREE.Mesh( planeGeo, material );
+plane.add(line)
+
+base.add( plane );
+console.log(plane.position)
+plane.position.z -= 1;
+console.log(plane.position)
+
+base.add(mesh)
+
+
+function animate() {
+    requestAnimationFrame(animate);
+    // Update your Three.js scene here...
+    renderer.render(scene, camera);
+}
+animate();
+
+
+
 const rotationSpeed = 0.0001; // Adjust as needed
 const gravity = 9.8 //meters per second
 const doubleTapThreshold = 300; // Maximum time (in milliseconds) between taps for double tap
@@ -87,7 +140,7 @@ function rotate_x_axis(factor) {
 
 const compiler = new BlockCompiler(model,document.getElementById("command_list"));
 
-const unit_multiplier = 0.3
+const unit_multiplier = 1
 window.move_forward = function(distance){
     distance *= unit_multiplier;
     compiler.AddBlocks(Direction.Forward, distance, Type.Translation);

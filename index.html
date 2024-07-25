@@ -10,6 +10,9 @@
     <script src="https://cdn.jsdelivr.net/gh/aframevr/aframe@3f0df33946cf12e3d552b3b4e500dd5b8ff6f692/dist/aframe-master.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js" integrity="sha512-UXumZrZNiOwnTcZSHLOfcTs0aos2MzBWHXOHOuB0J/R44QB0dwY5JgfbvljXcklVf65Gc4El6RjZ+lnwd2az2g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <!-- <script type = "module" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/jsm/controls/OrbitControls.min.js"></script> -->
     <!-- Local Library Pointers, May not need them later-->
      <!-- 
     <script src="node_modules/aframe.min.js"></script>
@@ -28,12 +31,14 @@
 
     <!-- Create an AR scene -->
     <a-scene embedded arjs=" sourceType: webcam; debugUIEnabled: false;" id="screen">
-        <!-- Uses a custom marker to display the model  -->
+        <!-- Uses a custom marker to display the model -->
         <a-marker preset="custom" type="pattern" url="Markers/pattern-Triangle.patt">
-            <!-- Creates an object using the models folder and displays it on the screen-->
+
+            <!-- Creates an object using the models folder and displays it on the screen -->
+            <a-entity gltf-model="Models/Pyramid.glb" position="1 0 0" scale="0.5 0.5 0.5" rotation = "-90 0 0" id="base"></a-entity>
             <a-entity gltf-model="Models/Pyramid.glb" position="0 0 0" scale="0.5 0.5 0.5" rotation = "0 180 0" id="model"></a-entity>
         </a-marker>
-        <!-- Display the camera feed -->
+        <!-- Display the camera feed  -->
         <a-entity camera id="camera"></a-entity>
     </a-scene >
     <div id="bottom_bar">
