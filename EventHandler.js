@@ -23,6 +23,7 @@ const base = document.getElementById("base").object3D;
 
 // console.log(scene)
 const scene = document.getElementById("screen").object3D;
+// console.log(scene)
 const camera = new THREE.Camera();
 scene.add(camera);
 const renderer = new THREE.WebGLRenderer();
@@ -55,15 +56,15 @@ console.log(plane.position)
 plane.position.z -= 1;
 console.log(plane.position)
 
-base.add(mesh)
+// base.add(mesh)
 
 
-function animate() {
-    requestAnimationFrame(animate);
-    // Update your Three.js scene here...
-    renderer.render(scene, camera);
-}
-animate();
+// function animate() {
+//     requestAnimationFrame(animate);
+//     // Update your Three.js scene here...
+//     renderer.render(scene, camera);
+// }
+// animate();
 
 
 

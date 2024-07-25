@@ -35,7 +35,7 @@
         <a-marker preset="custom" type="pattern" url="Markers/pattern-Triangle.patt">
 
             <!-- Creates an object using the models folder and displays it on the screen -->
-            <a-entity gltf-model="Models/Pyramid.glb" position="1 0 0" scale="0.5 0.5 0.5" rotation = "-90 0 0" id="base"></a-entity>
+            <a-box position="0 0 0" scale="0.5 0.5 0.5" rotation="-90 0 0" material="opacity: 0;" id="base"></a-box>
             <a-entity gltf-model="Models/Pyramid.glb" position="0 0 0" scale="0.5 0.5 0.5" rotation = "0 180 0" id="model"></a-entity>
         </a-marker>
         <!-- Display the camera feed  -->
