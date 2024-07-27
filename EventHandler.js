@@ -121,7 +121,7 @@ hammer.on("panleft panright panup pandown tap press pinch", function(ev) {
     //console.log(ev.type +" gesture detected.");
     if (ev.type == "pinch"){
         console.log('Zoom scale: ' + ev.scale);
-        base.scale.add(ev.scale * 0.01);
+        base.scale.addScalar(ev.scale-1 * 0.01);
     }
 
     if (ev.type == "tap"){
@@ -326,6 +326,9 @@ function rotate_y_axis(factor) {
     let rotation = model.rotation.y;
     rotation += rotationSpeed * factor
     rotation %= Math.PI * 2
+
+    // base.scale.addScalar(rotation);
+    // console.log(base.scale)
     // model.rotation.y = rotation
 }
 
