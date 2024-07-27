@@ -122,7 +122,7 @@ hammer.on("panleft panright panup pandown tap press pinch", function(ev) {
     //console.log(ev.type +" gesture detected.");
     if (ev.type == "pinch"){
 
-        base.scale = new THREE.Vector3(ev.scale, ev.scale, ev.scale);
+        base.scale.set(ev.scale, ev.scale, ev.scale);
 
     }
 
