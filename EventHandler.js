@@ -132,13 +132,13 @@ hammer.on("panleft panright panup pandown tap press pinch pinchend", function(ev
         base.scale.set(processedScale,  processedScale,  processedScale);
 
         if(ev.isFinal){
-            
+            console.log(currentScale);
         }
     }
 
     if (ev.type == "pinchend"){
         currentScale = base.scale.x;
-        console.debug(currentScale);
+        console.log(currentScale);
     }
 
 
