@@ -9,13 +9,19 @@ export const Type = {
     Rotation: 'Rotation'
 }
 
+const State = {
+    Idle: 'Idle',
+    Running: 'Running',
+    Crashed: 'Crashed',
+}
+
 //Class object for a compiled version of blocks
 export default class BlockCompiler{
 
     //------------------------------------------------------------Core functions for program-----------------------------------------------------------
     constructor(object, list){
         this.queue = [];
-        this.object = object.object3D;
+        this.object = object;
         this.command_list =  list;
         this.selectedIndex = 0; //This starts at 0, but
         
@@ -72,7 +78,7 @@ export default class BlockCompiler{
 
     ResetObject(){
         this.object.position.set(0,0,0);
-        this.object.rotation.set(0,Math.PI,0);
+        this.object.rotation.set(-Math.PI/2, 0 ,0);
     }
 
     //--------------------------------------------Helper functions for effects and UI-----------------------------------------------------
@@ -123,13 +129,13 @@ export default class BlockCompiler{
         let ui_text = "Unknown"
         switch (direction){
             case Direction.Forward:
-                ui_text = magnitude < 0 ? "Forward" : "Backward";
+                ui_text = magnitude > 0 ? "Forward" : "Backward";
                 break;
             case Direction.Left:
                 ui_text = magnitude < 0 ? "Left" : "Right";
                 break;
             case Direction.Clockwise:
-                ui_text = magnitude < 0 ? "Turn Right" : "Turn Left";
+                ui_text = magnitude > 0 ? "Turn Right" : "Turn Left";
                 break;
             default:
                 break;
@@ -245,7 +251,7 @@ function setUpAnimCache(model, axis, distance, field_centric = true){
 
    //This math is only necesary for translation movements while field_centric is turned off
     if (!field_centric && axis != "y"){
-        let rotation_offset = Math.PI;
+        let rotation_offset = 0;
         //This just sets "otherAxis" to the opposing axis. [axis = x, otherAxis = z] or [axis = z, otherAxis = x]
         let otherAxis = axis == "x" ? "z" : "x";
         //When strafing, the directions are inverted. To avoid conflict with FC code, simply invert the direction here
@@ -269,7 +275,7 @@ function setUpAnimCache(model, axis, distance, field_centric = true){
     //Automatically configure the starting point used by the animator
     if (axis == "x" || axis == "z"){
         anim_cache.start_pos["x"] = model.position.x;
-        anim_cache.start_pos["z"] = model.position.z;
+        anim_cache.start_pos["z"] = model.position.y;
         
     }
     else if (axis == "y"){
@@ -297,7 +303,7 @@ function anim_translate(timeStamp){
     //For Left and Right Translation
     if (anim_cache.axis == "x" || anim_cache.axis == "z"){
         anim_cache.model.position.x = anim_cache.start_pos["x"] + anim_cache.distance["x"] * completion_rate;
-        anim_cache.model.position.z = anim_cache.start_pos["z"] + anim_cache.distance["z"] * completion_rate;
+        anim_cache.model.position.y = anim_cache.start_pos["z"] + anim_cache.distance["z"] * completion_rate;
     }
     //For Left and Right Rotation
     else if (anim_cache.axis == "y"){
