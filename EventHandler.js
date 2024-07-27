@@ -123,7 +123,7 @@ hammer.on("panleft panright panup pandown tap press pinch", function(ev) {
         console.log('Zoom scale: ' + ev.scale);
         
         base.scale.addScalar((ev.scale-1) * 0.01);
-        console.log(base.scale)
+        console.log(base.scale.x);
     }
 
     if (ev.type == "tap"){
