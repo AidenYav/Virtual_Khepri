@@ -82,7 +82,7 @@ function temp() {
     plane.add(line)
     plane.name = "plane"
     base.add( plane );
-    plane.position.z -= 1;
+    plane.position.z -= 1.1;//An extra 0.1 to prevent clipping
     
     // const wall = new THREE.Mesh(cube, wallMat)
     // wall.name = "wall"
@@ -115,21 +115,17 @@ const x_offset = degrees_to_radians(-90);
 let lastTapTime = 0;
 let lastRotateTime = 0;
 
+
 // listen to events...
 hammer.get('pinch').set({ enable: true });
 hammer.on("panleft panright panup pandown tap press pinch", function(ev) {
     //console.log(ev.type +" gesture detected.");
     if (ev.type == "pinch"){
-        console.log('Zoom scale: ' + ev.scale);
-        if(ev.scale < 1){
-            console.log("Zoom in?")
-        }
-        else if(ev.scale > 1){
-            console.log("Zoom Out")
-        }
-        base.scale.addScalar((ev.scale-1) * 0.001);
-        console.log(base.scale.x);
+
+        base.scale = THREE.Vector3(ev.scale, ev.scale, ev.scale);
+
     }
+
 
     if (ev.type == "tap"){
         const currentTime = Date.now();
