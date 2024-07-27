@@ -121,7 +121,9 @@ hammer.on("panleft panright panup pandown tap press pinch", function(ev) {
     //console.log(ev.type +" gesture detected.");
     if (ev.type == "pinch"){
         console.log('Zoom scale: ' + ev.scale);
+        
         base.scale.addScalar(ev.scale-1 * 0.01);
+        console.log(base.scale)
     }
 
     if (ev.type == "tap"){
