@@ -131,6 +131,7 @@ hammer.on("panleft panright panup pandown tap press pinch", function(ev) {
         // processedScale = clamp(processedScale, 0.1, 5);
         base.scale.set(processedScale,  processedScale,  processedScale);
 
+        currentScale = processedScale;
         if(ev.isFinal){
             currentScale = base.scale.x;
             console.debug(currentScale);
