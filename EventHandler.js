@@ -121,8 +121,15 @@ hammer.get('pinch').set({ enable: true });
 hammer.on("panleft panright panup pandown tap press pinch", function(ev) {
     //console.log(ev.type +" gesture detected.");
     if (ev.type == "pinch"){
-
-        base.scale.set(currentScale + ev.scale, currentScale + ev.scale, currentScale + ev.scale);
+        //Starts each pinch with a scale increase of 0
+        //If ev.scale is < 1, then processed scale will be negative and will shrink the scale
+        //If ev.scale is > 1, then processed scale will be positive and will grow the scale
+        let processedScale = ev.scale - 1; 
+        //Adds the "relative scale" in which the value should be decreasing or increasing relative to.
+        processedScale += currentScale;
+        //At this point, processed scale can take in other constraints such as clamps
+        processedScale = clamp(processedScale, 0.1, 5);
+        base.scale.set(processedScale,  processedScale,  processedScale);
 
         if(ev.isFinal){
             currentScale = base.scale.x;
