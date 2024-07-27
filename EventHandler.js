@@ -118,7 +118,7 @@ let lastRotateTime = 0;
 let currentScale = base.scale.x;
 // listen to events...
 hammer.get('pinch').set({ enable: true });
-hammer.on("panleft panright panup pandown tap press pinch", function(ev) {
+hammer.on("panleft panright panup pandown tap press pinch pinchend", function(ev) {
     //console.log(ev.type +" gesture detected.");
     if (ev.type == "pinch"){
         //Starts each pinch with a scale increase of 0
@@ -131,11 +131,14 @@ hammer.on("panleft panright panup pandown tap press pinch", function(ev) {
         // processedScale = clamp(processedScale, 0.1, 5);
         base.scale.set(processedScale,  processedScale,  processedScale);
 
-        currentScale = processedScale;
         if(ev.isFinal){
-            currentScale = base.scale.x;
-            console.debug(currentScale);
+            
         }
+    }
+
+    if (ev.type == "pinchend"){
+        currentScale = base.scale.x;
+        console.debug(currentScale);
     }
 
 
