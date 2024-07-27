@@ -121,7 +121,12 @@ hammer.on("panleft panright panup pandown tap press pinch", function(ev) {
     //console.log(ev.type +" gesture detected.");
     if (ev.type == "pinch"){
         console.log('Zoom scale: ' + ev.scale);
-        
+        if(ev.scale < 1){
+            console.log("Zoom in?")
+        }
+        else if(ev.scale > 1){
+            console.log("Zoom Out")
+        }
         base.scale.addScalar((ev.scale-1) * 0.0001);
         console.log(base.scale.x);
     }
@@ -328,9 +333,9 @@ function rotate_y_axis(factor) {
     let rotation = model.rotation.y;
     rotation += rotationSpeed * factor
     rotation %= Math.PI * 2
-
-    // base.scale.addScalar(rotation);
-    // console.log(base.scale)
+    base.scale.addScalar(rotation);
+    console.log(typeof(base.scale.x));
+    console.log(Number(base.scale.x));
     // model.rotation.y = rotation
 }
 
