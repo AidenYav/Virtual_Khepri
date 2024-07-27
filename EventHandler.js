@@ -115,15 +115,18 @@ const x_offset = degrees_to_radians(-90);
 let lastTapTime = 0;
 let lastRotateTime = 0;
 
-
+let currentScale = base.scale.x;
 // listen to events...
 hammer.get('pinch').set({ enable: true });
 hammer.on("panleft panright panup pandown tap press pinch", function(ev) {
     //console.log(ev.type +" gesture detected.");
     if (ev.type == "pinch"){
 
-        base.scale.set(ev.scale, ev.scale, ev.scale);
+        base.scale.set(currentScale + ev.scale, currentScale + ev.scale, currentScale + ev.scale);
 
+        if(ev.isFinal){
+            currentScale = base.scale.x;
+        }
     }
 
 
