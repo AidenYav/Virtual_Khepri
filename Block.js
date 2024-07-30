@@ -1,3 +1,4 @@
+
 //Enum Typings
 export const Direction = {
     Forward: 'Forward',
@@ -15,16 +16,19 @@ const State = {
     Crashed: 'Crashed',
 }
 
+const unit_multiplier = 2;
+let ProgramState = State.Idle;
+
 //Class object for a compiled version of blocks
 export default class BlockCompiler{
 
     //------------------------------------------------------------Core functions for program-----------------------------------------------------------
-    constructor(object, list){
+    constructor(object, list, map){
         this.queue = [];
         this.object = object;
         this.command_list =  list;
         this.selectedIndex = 0; //This starts at 0, but
-        
+        this.activeMap = map;
         // console.log(this.object3D)
     }
 
@@ -50,7 +54,14 @@ export default class BlockCompiler{
     }
     
     CompileBlocks(field_centric = true){
-
+        //If the program state is running or crashed, cannot run any other block code until the program is finished
+        if (ProgramState != State.Idle) {
+            console.log(ProgramState);
+            return;
+        }
+        
+        //Sets the program state to running
+        ProgramState = State.Running;
         for(let i=0; i<this.queue.length; i++){
             //Necessary for scopes for some reason
             let self = this;
@@ -59,10 +70,17 @@ export default class BlockCompiler{
             setTimeout(
                 function(){
                     self.highlightElement(i+1);
-                    self.queue[i].ActivateBlock(self.object,field_centric);
+                    self.queue[i].ActivateBlock(self.object,field_centric, self.activeMap);
                 }, 
-            (animation_duration + 50)*i);
+            (animation_duration + animation_delay)*i);
         }
+        setTimeout(
+            function(){
+                ProgramState = State.Idle;
+                console.log("Finished Moving");
+            },
+            (animation_duration + animation_delay) * this.queue.length
+        )
     }
 
     ClearBlocks(){
@@ -77,8 +95,12 @@ export default class BlockCompiler{
     }
 
     ResetObject(){
-        this.object.position.set(0,0,0);
+        this.object.position.set(0,0,1);
         this.object.rotation.set(-Math.PI/2, 0 ,0);
+    }
+
+    SetMap(map){
+        this.activeMap = map;
     }
 
     //--------------------------------------------Helper functions for effects and UI-----------------------------------------------------
@@ -109,7 +131,7 @@ export default class BlockCompiler{
                 return i;
             }
         }
-        console.warn("Element could not be found!")
+        console.warn("Element could not be found!");
         return -1;
     }
 
@@ -126,7 +148,7 @@ export default class BlockCompiler{
     }
 
     block_text(direction,magnitude){
-        let ui_text = "Unknown"
+        let ui_text = "Unknown";
         switch (direction){
             case Direction.Forward:
                 ui_text = magnitude > 0 ? "Forward" : "Backward";
@@ -163,9 +185,10 @@ class Block{
      * @param {object3D} object                 A passed 3D object to move.
      * @param {boolean} [field_centric = true]  A boolean that determines if the object should move relative to it's own 
      *                                          orientation or from the camera's orientation. Defaults to true.
+     * @param {Array[int][int]} map             A 2d array containing the "map" used to build obstacle.
      * @returns {undefined}                     Does not return anything.
      */
-    ActivateBlock(object, field_centric = true){
+    ActivateBlock(object, field_centric = true, map){
         //Forward drive set up
         if (this.direction === Direction.Forward){
             setUpAnimCache(object,"z", this.magnitude, field_centric);
@@ -187,11 +210,36 @@ class Block{
             console.warn("Tried to activate block of " + this.type + " type!");
             return;
         }
-
-        //The activation of the block will result in an animation, so default call here
-        requestAnimationFrame(anim_translate);
+        
+        //Checks if the robot would collide with a "wall"
+        if (this.checkForWall( object.position.clone().add(new THREE.Vector3(anim_cache.distance.x, anim_cache.distance.z, 0)) ,map)){
+            console.log("Hit obsticle")
+            requestAnimationFrame(anim_hitWall);
+        }
+        else{
+            //The activation of the block will result in an animation, so default call here
+            requestAnimationFrame(anim_translate);
+        }
     }
 
+    checkForWall(position, map){
+        console.log(position);
+        let size = map.length;
+        let center = Math.round(size/2);
+        let pos_x = center - 1 + Math.round(position.x / unit_multiplier); //Equal to the "column"
+        let pos_y = size - center + Math.round(-position.y / unit_multiplier); //Equal to the "row"
+        
+        //This checks if the object is outside of the "map"
+        if (pos_y < 0 || 
+            pos_x < 0 || 
+            pos_y > size-1 ||
+            pos_x > size -1 
+        )
+        {return true;}
+        //Returns True if a wall is present
+        //Returns False if there is no wall
+        return map[pos_y][pos_x] == 1;
+    }
 
     // TranslateBlock(object){
     //     if (this.direction === Direction.Forward){
@@ -232,10 +280,10 @@ let anim_complete = false;
 //Storage related to information about the animation requirements (since parameters cannot be used)
 const anim_cache = {
     axis : 'z',
-    distance : { "x" : 0 , "y" : 0 , "z": 0},
+    distance : new THREE.Vector3(0,0,0),//{ "x" : 0 , "y" : 0 , "z": 0},
     model : undefined,
     field_centric : true,
-    start_pos : { "x" : 0 , "y" : 0 , "z": 0}
+    start_pos : new THREE.Vector3(0,0,0)//{ "x" : 0 , "y" : 0 , "z": 0}
     
 }
 
@@ -295,12 +343,9 @@ function anim_translate(timeStamp){
 
     //Calculate progress on animation based on time passed
     const elapsed = timeStamp - start;
-    //This completion rate can be manipulated in the future to mimic de/acceleration
-    //Currently this is a linear rate
-    const completion_rate = Math.min(elapsed / animation_duration, 1); 
-    
-    // if (!field_centric){}
-    //For Left and Right Translation
+    //This completion rate can be manipulated to mimic de/acceleration
+    const completion_rate = animation_rates(AnimationTypes.S_Circle, elapsed/animation_duration);
+    //For movement Translation (Forward, Backward, Left, and Right)
     if (anim_cache.axis == "x" || anim_cache.axis == "z"){
         anim_cache.model.position.x = anim_cache.start_pos["x"] + anim_cache.distance["x"] * completion_rate;
         anim_cache.model.position.y = anim_cache.start_pos["z"] + anim_cache.distance["z"] * completion_rate;
@@ -309,10 +354,6 @@ function anim_translate(timeStamp){
     else if (anim_cache.axis == "y"){
         anim_cache.model.rotation.y = anim_cache.start_pos["y"] + degrees_to_radians(anim_cache.distance["y"]) * completion_rate;
     }
-    // //For Forward and Backward Translation
-    // else if (anim_cache.axis == "z"){
-    //     anim_cache.model.position.z = anim_cache.start_pos["z"] + anim_cache.distance * completion_rate;
-    // }
     
     //Should the elapsed time go over the animation duration, end the sequence
     if (elapsed < animation_duration && !anim_complete){
@@ -321,6 +362,91 @@ function anim_translate(timeStamp){
     else{
         start = undefined;
     }
+}
+
+function anim_hitWall(timeStamp){
+    //This is the first call of the wrapper?
+    if (start === undefined) {
+        start = timeStamp;
+    }
+
+    //Calculate progress on animation based on time passed
+    const elapsed = (timeStamp - start);
+    //This completion rate can be manipulated in the future to mimic de/acceleration
+    let amplitude = 0.1; //Modifier to mimic hitting a wall
+    //Sine type rate
+    const completion_rate = Math.min( -amplitude * Math.sin(2 * Math.PI * (elapsed/animation_duration) + Math.PI/2)  + amplitude, 1);
+
+    //For Left and Right Translation
+    if (anim_cache.axis == "x" || anim_cache.axis == "z"){
+        anim_cache.model.position.x = anim_cache.start_pos["x"] + anim_cache.distance["x"] * completion_rate;
+        anim_cache.model.position.y = anim_cache.start_pos["z"] + anim_cache.distance["z"] * completion_rate;
+    }
+
+    //Should the elapsed time go over the animation duration, end the sequence
+    if (elapsed < animation_duration && !anim_complete){
+        requestAnimationFrame(anim_hitWall);
+        
+    }
+    else{
+        
+        start = undefined;
+    }
+}
+
+const AnimationTypes = {
+    Linear: "Linear",
+    Parabolic: "Parabolic",
+    Inverse_Parabolic : "I-Parabolic",
+    Circle: "Circle",
+    S_Circle: "S-Circle"
+}
+/** Manipulates the inputted animation completion rate and returns
+ * a corresponding multiplier for the desired animation.
+ * @param {AnimationType} type   A Pre-defined type of animation. 
+ *                                  In math terms, this is f() in f(x).
+ * @param {float} rate           A value between [0,1] representing how close the animation should be close to completion 
+ *                                  In math terms, this is x in f(x).
+ * @returns {float}              Returns the manipulated multiplier
+ *                                  In math terms, this is f(x) or y.
+ */
+function animation_rates(type, rate){
+    let val = rate;
+    switch(type){
+        //Simple linear rate 
+        case (AnimationTypes.Linear): //(organizational placeholder)
+            //Default is the linear rate, so nothing needs to happen
+            break;
+        //Uses a quadratic
+        case (AnimationTypes.Parabolic):
+            val =  Math.pow(rate , 2 ); 
+            break;
+        //Uses a negative quadratic
+        case (AnimationTypes.Inverse_Parabolic):
+            val = -(elapsed / animation_duration) * (rate - 2); 
+            break;
+        //Uses a semi-circle (top half) 
+        case (AnimationTypes.Circle):
+            val = Math.sqrt(1 - Math.pow(rate - 1 , 2 ));
+            break;
+        //Sort of a piece-wise function using the upper and lower half of a circle
+        case (AnimationTypes.S_Circle):
+            //Lower semi-circle
+            if (rate < 0.5){
+                val = -Math.sqrt(0.25 - Math.pow(rate, 2)) + 0.5;
+            }
+            //Upper semi-circle
+            else{
+                val = Math.sqrt(0.25 - Math.pow(rate - 1, 2)) + 0.5;
+            }
+            break;
+        //Default is already set
+        default:
+            console.warn(type,"Animation type was not found. Please check that you are using the AnimationTypes Enum or spelling the types correctly.");
+            break;
+    }
+
+    return Math.max(Math.min(val, 1), 0);
 
 }
 

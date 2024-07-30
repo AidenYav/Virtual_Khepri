@@ -25,15 +25,20 @@ let model = undefined;
 let compiler = undefined;
 loader.load( './Models/Pyramid.glb', function ( gltf ) {
 
+    //Model set up
     model = gltf.scene;
     model.name = "robot"
     model.scale.multiplyScalar(0.6);
     model.position.z += 1;
+    model.rotation.x -= degrees_to_radians(90);
+    //Base set up
     base.name = "base"
 	base.add( model );
-    model.rotation.x -= degrees_to_radians(90);
-    compiler = new BlockCompiler(model,document.getElementById("command_list"));
-    temp();
+    //World set up
+    loadWorld();
+    //Block compiler configuration
+    compiler = new BlockCompiler(model,document.getElementById("command_list"), activeMap);
+    
 
 }, undefined, function ( error ) {
 
@@ -50,17 +55,21 @@ loader.load( './Models/Pyramid.glb', function ( gltf ) {
 const scene = document.getElementById("screen").object3D;
 // console.log(scene)
 
-function temp() {
+function loadWorld() {
+    //Creates new map
     activeMap = [   [ 0 , 0 , 0 , 0 , 0 ],
                     [ 1 , 1 , 1 , 1 , 0 ],
                     [ 0 , 0 , 0 , 1 , 0 ],
                     [ 0 , 1 , 1 , 1 , 0 ],
                     [ 0 , 0 , 0 , 0 , 0 ] 
                 ]
+    //Builds the wals for the map
     buildMap(activeMap, base)
-    const geo = new THREE.IcosahedronGeometry(1.0, 2);
-    const cube = new THREE.BoxGeometry(2,2,2,2,2,2);
 
+    //Creates some basic geometry
+    const icoSphere = new THREE.IcosahedronGeometry(1.0, 2);
+    const cube = new THREE.BoxGeometry(2,2,2,2,2,2);
+    //Creates some materials to use
     const mat = new THREE.MeshBasicMaterial({
         color: 0xccff
     })
@@ -68,10 +77,14 @@ function temp() {
         color : 0xffffff,
         wireframe: true
     })
+    //Adds a wire "hitbox" to the model for visualization
+    //(Wire hitbox doesn't really matter though, may be removed in the future)
     model.add(new THREE.Mesh(cube, wireMat));
-    const mesh = new THREE.Mesh(geo, mat);
-    mesh.material = wireMat
 
+    // const mesh = new THREE.Mesh(icoSphere, mat);
+    // mesh.material = wireMat;
+
+    //Creates a plane used as a base plate
     const planeGeo = new THREE.PlaneGeometry( 10, 10 , 5, 5);
     const material = new THREE.MeshBasicMaterial( {color: 0xff00ff, side: THREE.DoubleSide, transparent : true, opacity : 0.5} );
     // const wallMat = new THREE.MeshBasicMaterial({color: 0x00ff00, transparent : false, opacity: 0.5})
@@ -79,31 +92,11 @@ function temp() {
     const line = new THREE.LineSegments( wireframe );
 
     const plane = new THREE.Mesh( planeGeo, material );
-    plane.add(line)
-    plane.name = "plane"
-    base.add( plane );
-    plane.position.z -= 1.1;//An extra 0.1 to prevent clipping
-    
-    // const wall = new THREE.Mesh(cube, wallMat)
-    // wall.name = "wall"
-    // base.add(wall);
-    // wall.position.x += 4
+    plane.add(line) //Adds wireframe lines to create a grid-like visualization that the user will be moving along
+    plane.name = "plane" //Naming for reference
+    base.add( plane ); //Adds plane to the actual world
+    plane.position.z -= 1.05;//An extra 0.05 to prevent clipping
 
-
-    var hitbox1 = new THREE.Box3().setFromObject(model);
-    var hitbox2 = new THREE.Box3().setFromObject(plane);
-    console.log(hitbox1.intersectsBox(hitbox2));
-    console.log(hitbox1, hitbox2)
-
-    // Calculate dimensions of the bounding box
-    const dimensions = new THREE.Vector3().subVectors(hitbox1.max, hitbox1.min);
-    
-    console.log(dimensions);
-    const hitboxVisual = new THREE.BoxGeometry(dimensions.x, dimensions.y, dimensions.z);
-    const hit = new THREE.Mesh(hitboxVisual, material);
-    model.add(hit);
-
-    console.log(base);
 }
 
 
@@ -308,33 +301,6 @@ window.clearBlocks = function(){
 window.resetObject = function(){
     compiler.ResetObject();
 }
-
-
-// const command_list = document.getElementById("command_list");
-// let current_command = document.getElementById("start").parentNode;
-// function add_command(text, referenceElement){
-    
-//     //Creates a new label
-//     var newLabel = document.createElement("label");
-//     newLabel.className = "command selected";
-//     newLabel.textContent = text;
-    
-//     //Wraps the label in a list object
-//     var newListItem = document.createElement("li");
-//     newListItem.appendChild(newLabel);
-
-//     //Place the element in the list
-//     referenceElement.insertAdjacentElement("afterend",newListItem);
-
-//     current_command.firstChild.classList.toggle("selected", false);
-//     console.log(current_command.firstChild.classList)
-//     current_command = newListItem;
-    
-    
-//     console.log(command_list.childElementCount);
-
-// }
-
 
 
 function rotate_y_axis(factor) {
