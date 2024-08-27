@@ -1,53 +1,64 @@
-// import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import BlockCompiler, { Block, Direction, Type, degrees_to_radians, radians_to_degrees } from "./Block.js";
+//Import of the custom Block Object
+import Block, { degrees_to_radians, radians_to_degrees } from "./Block.js";
 
 
-console.log("Hello World!")
+console.log("Hello World!");
+//Initialize elements that will serve as a base for all event listeners.
 const screen = document.getElementById('screen'); // Get a reference to an element
 const workspace_area = document.getElementById('workspace_area');
 const editor_view_area = document.getElementById('editor_view');
-if (screen == null){
-    console.log("Could not find screen")
+/*if (screen == null){
+    console.warn("Could not find screen");
 }
 else{
-    console.log("screen Identified")
-}
+    console.log("screen Identified");
+}*/
 
-const hammer = new Hammer(screen); // Create an instance of Hammer with the reference
+// Create an instance of Hammer with the reference(s)
+const hammer = new Hammer(screen); 
 const workspace_events = new Hammer(workspace_area);
-// console.log("Hello World!")
-hammer.get('pan').set({ direction: Hammer.DIRECTION_ALL });
-workspace_events.get('pan').set({ direction: Hammer.DIRECTION_ALL });
-// const model = document.getElementById("model");
 
+//Set up the hammer event listeners to enable specific event detections
+hammer.get('pan').set({ direction: Hammer.DIRECTION_ALL });
+hammer.get('pinch').set({ enable: true });
+workspace_events.get('pan').set({ direction: Hammer.DIRECTION_ALL });
+
+//Objects/constants necessary to build/load the scene
 const base = document.getElementById("base").object3D;
-let block_dictionary = {counter : 0};
 const loader = new THREE.GLTFLoader();
+
+//Variables used to track/record the active map and current object model
 let activeMap = undefined;
 let model = undefined;
-let compiler = undefined;
-loader.load( './Models/Pyramid.glb', function ( gltf ) {
 
-    //Model set up
-    model = gltf.scene;
-    model.name = "robot"
-    model.scale.multiplyScalar(0.6);
-    model.position.z += 1;
-    model.rotation.x -= degrees_to_radians(90);
-    //Base set up
-    base.name = "base"
-	base.add( model );
-    //World set up
-    loadWorld();
-    //Block compiler configuration
-    compiler = new BlockCompiler(model,document.getElementById("command_list"), activeMap);
-    
+//A dictionary container that will be used to control all blocks currently on screen
+let block_dictionary = {counter : 0};
 
-}, undefined, function ( error ) {
+//Loads the saved 3d model used to move.
+loader.load( 
+    './Models/Pyramid.glb', 
 
-	console.error( error );
+    function ( gltf ) {
 
-} );
+        //Model set up
+        model = gltf.scene;
+        model.name = "robot";
+        model.scale.multiplyScalar(0.6);
+        model.position.z += 1;
+        model.rotation.x -= degrees_to_radians(90);
+        //Base set up
+        base.name = "base";
+        base.add( model );
+        //World set up
+        loadWorld();
+    },
+
+    undefined, 
+
+    function ( error ) {
+	    console.error( error );
+    } 
+);
 
 // const web_camera = document.getElementById("camera");
 
@@ -55,73 +66,24 @@ loader.load( './Models/Pyramid.glb', function ( gltf ) {
 // const scene = screen.object3D
 
 // console.log(scene)
-const scene = document.getElementById("screen").object3D;
+// const scene = document.getElementById("screen").object3D;
 // console.log(scene)
 
-function loadWorld() {
-    //Creates new map
-    activeMap = [   [ 0 , 0 , 0 , 0 , 0 ],
-                    [ 1 , 1 , 1 , 1 , 0 ],
-                    [ 0 , 0 , 0 , 1 , 0 ],
-                    [ 0 , 1 , 1 , 1 , 0 ],
-                    [ 0 , 0 , 0 , 0 , 0 ] 
-                ]
-    //Builds the wals for the map
-    buildMap(activeMap, base)
+//-------------------------------------------------------------------------------------------------------------------------------------------
+//---------------------------------------------------<Block Dragging Related Code>-----------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------------------------------
 
-    //Creates some basic geometry
-    const icoSphere = new THREE.IcosahedronGeometry(1.0, 2);
-    const cube = new THREE.BoxGeometry(2,2,2,2,2,2);
-    //Creates some materials to use
-    const mat = new THREE.MeshBasicMaterial({
-        color: 0xccff
-    })
-    const wireMat = new THREE.MeshBasicMaterial({
-        color : 0xffffff,
-        wireframe: true
-    })
-    //Adds a wire "hitbox" to the model for visualization
-    //(Wire hitbox doesn't really matter though, may be removed in the future)
-    model.add(new THREE.Mesh(cube, wireMat));
-
-    // const mesh = new THREE.Mesh(icoSphere, mat);
-    // mesh.material = wireMat;
-
-    //Creates a plane used as a base plate
-    const planeGeo = new THREE.PlaneGeometry( 10, 10 , 5, 5);
-    const material = new THREE.MeshBasicMaterial( {color: 0xff00ff, side: THREE.DoubleSide, transparent : true, opacity : 0.5} );
-    // const wallMat = new THREE.MeshBasicMaterial({color: 0x00ff00, transparent : false, opacity: 0.5})
-    const wireframe = new THREE.WireframeGeometry( planeGeo );
-    const line = new THREE.LineSegments( wireframe );
-
-    const plane = new THREE.Mesh( planeGeo, material );
-    plane.add(line) //Adds wireframe lines to create a grid-like visualization that the user will be moving along
-    plane.name = "plane" //Naming for reference
-    base.add( plane ); //Adds plane to the actual world
-    plane.position.z -= 1.05;//An extra 0.05 to prevent clipping
-
-}
-
-
-const rotationSpeed = 0.0001; // Adjust as needed
-const gravity = 9.8 //meters per second
-const doubleTapThreshold = 300; // Maximum time (in milliseconds) between taps for double tap
-const max_x_rotation = degrees_to_radians(45); 
-const x_offset = degrees_to_radians(-90);
-let lastTapTime = 0;
-let lastRotateTime = 0;
-
-let currentScale = base.scale.x;
-
+//Initailization of necessary constants
+const drag_offset = 20;
+const unit_multiplier = 2;
+const snapThreshold = 10; //in pixels
+//Initialization of variables used to temporarily store program states
 let last_clicked_block = undefined;
 let pan_inprogress = false;
-const drag_offset = 20;
-
+//Event listener loop
 workspace_events.on("panleft panright panup pandown panend", function(ev){
     if (!pan_inprogress){
-        // console.log(ev.center.x, ev.center.y);
-        // console.log(ev.target.classList);
-        // console.log(ev.center.y- window.screen.height*0.5);
+
         if(ev.target.classList.contains("spawner")){
             // console.log("Hi")
             last_clicked_block = create_draggable_block(ev.target);
@@ -139,15 +101,8 @@ workspace_events.on("panleft panright panup pandown panend", function(ev){
         last_clicked_block.style.top = ev.center.y - workspace_area.getBoundingClientRect().top + drag_offset + 'px';
     }
     if (ev.type == "panend"){
-        /* Some data information checks
-        // console.log(last_clicked_block);
-        // console.log(ev.center.x, ev.center.y);
-        // console.log("Pan ended");*/
-
-
-        pan_inprogress = false;
+        pan_inprogress = false; //Panning is no-longer in progress
         
-
         //After the draggable is placed, do connection checks
         //Snap check (chains together draggables)
         if (last_clicked_block != undefined){
@@ -155,11 +110,16 @@ workspace_events.on("panleft panright panup pandown panend", function(ev){
             delete_block_check(last_clicked_block); //Checks if the block should be deleted after being dragged to a delete zone
             snap_blocks(last_clicked_block);
         }
-        
+
+        //After the block is no longer being moved and all final checks are completed, the last_block_data is no longer needed, 
+        //so reset it to default to avoid errors or unintended triggers.
         last_clicked_block = undefined; //Clear only at the end
     }
 });
-const snapThreshold = 10; //20 pixels
+
+/**Checks if the block most recently moved is within range of another block to snap to and chain it together as a program.
+ * @param {*} original The (most recent) block that was moved by the user
+ */
 function snap_blocks(original){
     //Retrieves all active draggable objects. This is a non-live list, so recheck this list every call.
     //Could be optimize to check only every new draggable creation but may get messy when reading between different events and functions
@@ -186,9 +146,9 @@ function snap_blocks(original){
                 // console.log("Snap Bottom")
                 //Sets the placed block to run after the other block
                 // console.log(block_dictionary[other.dataset.identifier])
-                block_dictionary[other.dataset.identifier].insertBlock(block_dictionary[original.dataset.identifier]);
+                block_dictionary[other.dataset.identifier].InsertBlock(block_dictionary[original.dataset.identifier]);
                 //Overlap check
-                return;
+                break;
             }
             //Snaps the block to the top of the other one
             else if (Math.abs(originalRect.bottom - otherRect.top) < snapThreshold) {
@@ -196,18 +156,21 @@ function snap_blocks(original){
                 original.style.left = otherRect.left +'px';
                 // console.log("Snap Top")
                 //Sets the other block to run after the place block is activated
-                block_dictionary[original.dataset.identifier].insertBlock(block_dictionary[other.dataset.identifier]);
+                block_dictionary[original.dataset.identifier].InsertBlock(block_dictionary[other.dataset.identifier]);
                 //Overlap check
-                return;
+                break;
             } 
 
         }
     }
 }
 
+/**Checks if the block being moved was previously connected to another block. 
+ * @param {Object} original The (most recent) block that was moved by the user
+ */
 function unsnap_detection(original){
     const draggables = document.querySelectorAll('.draggable');
-    block_dictionary[original.dataset.identifier].clearNextBlock(); //Delete whatever child command was here previously since this block is being moved.
+    block_dictionary[original.dataset.identifier].ClearNextBlock(); //Delete whatever child command was here previously since this block is being moved.
     for(let i=0; i<draggables.length; i++){
         let other = draggables[i];
         if (original !== other) {
@@ -218,12 +181,15 @@ function unsnap_detection(original){
                 originalRect.left == otherRect.left){
                 //If this is true, then the other block must be the parent of this block, and it's child command needs to be deleted
                 // console.log("Unsnapped from block", other.dataset.identifier);
-                block_dictionary[other.dataset.identifier].clearNextBlock();
+                block_dictionary[other.dataset.identifier].ClearNextBlock();
             }
         }
     }
 }
 
+/**Deletes blocks that are dragged "out of bounds" of the desired area. If it is inside the outside area, it will be deleted.
+ * @param {Object} block The block that was most recently moved, and will be checked if it is "out of bounds".
+ */
 function delete_block_check(block){
     let block_box = block.getBoundingClientRect();
     if (block_box.top < editor_view_area.getBoundingClientRect().top || 
@@ -241,7 +207,9 @@ function delete_block_check(block){
     }
 }
 
-
+/**Creates a UI object to be dragged.
+ * @param {Object} source_block This is a custom html element with specific parameters. Seen on the index.html page and denoted with the "spawner" class
+ */
 function create_draggable_block(source_block){
     const block = document.createElement("label");
     block.textContent = source_block.textContent;
@@ -252,7 +220,7 @@ function create_draggable_block(source_block){
     if (source_block.dataset.type == "Compiler"){
         //Only 1 "Compiler" should exist at any one time, at least for 1 specific object.
         if ("Compiler" in block_dictionary){
-            block_dictionary["Compiler"].remove();
+            block_dictionary["Compiler"].element.remove();
             delete block_dictionary["Compiler"];
         }
         newBlockData = new Block( 
@@ -278,8 +246,23 @@ function create_draggable_block(source_block){
     return block;
 }
 
-// listen to events...
-hammer.get('pinch').set({ enable: true });
+
+//-------------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------<Interactive Scene Code>-------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------------------------------
+//This code was mostly to learn/test the capabilities of hammer.js
+//However, it does have the function of pinch zooming to increase/decrease the size of the scene (mobile only)
+
+//Initialization of constant values
+const rotationSpeed = 0.0001; // Adjust as needed
+const doubleTapThreshold = 300; // Maximum time (in milliseconds) between taps for double tap
+const max_x_rotation = degrees_to_radians(45); //Maximum rotation on the x-axis relative to it's initial start rotation/x_offset
+const x_offset = degrees_to_radians(-90); //The starting rotation of the object
+//Initialization of variables used to record and track program states
+let lastTapTime = 0;
+let lastRotateTime = 0;
+let currentScale = base.scale.x;
+//Event loop
 hammer.on("panleft panright panup pandown tap press pinch pinchend", function(ev) {
     //console.log(ev.type +" gesture detected.");
     if (ev.type == "pinch"){
@@ -311,12 +294,11 @@ hammer.on("panleft panright panup pandown tap press pinch pinchend", function(ev
             // Single tap detected
             // model.position.y -= gravity * 0.01
             //console.log('Single tap detected');
-            console.log(checkForWall(model, activeMap));
+            // console.log(checkForWall(model, activeMap));
             // console.log(radians_to_degrees(model.rotation.x) +"\n"+ radians_to_degrees(model.rotation.y) +"\n"+ radians_to_degrees(model.rotation.z))
         }
         // console.log(currentTime - lastTapTime)
         lastTapTime = currentTime;
-        
    }
 
    
@@ -360,6 +342,64 @@ function rotate_x_axis(factor) {
         x_offset + max_x_rotation)
 }
 
+function rotate_y_axis(factor) {
+    let rotation = model.rotation.y;
+    rotation += rotationSpeed * factor
+    rotation %= Math.PI * 2
+    // base.scale.addScalar(rotation);
+    // console.log(typeof(base.scale.x));
+    // console.log(Number(base.scale.x));
+    // model.rotation.y = rotation
+}
+
+//Clamp function
+const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
+//-------------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------<World Building Functions>-------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------------------------------
+function loadWorld() {
+    //Creates new map
+    activeMap = [   [ 0 , 0 , 0 , 0 , 0 ],
+                    [ 1 , 1 , 1 , 1 , 0 ],
+                    [ 0 , 0 , 0 , 1 , 0 ],
+                    [ 0 , 1 , 1 , 1 , 0 ],
+                    [ 0 , 0 , 0 , 0 , 0 ] 
+                ]
+    //Builds the wals for the map
+    buildMap(activeMap, base)
+
+    //Creates some basic geometry
+    const icoSphere = new THREE.IcosahedronGeometry(1.0, 2);
+    const cube = new THREE.BoxGeometry(2,2,2,2,2,2);
+    //Creates some materials to use
+    const mat = new THREE.MeshBasicMaterial({
+        color: 0xccff
+    })
+    const wireMat = new THREE.MeshBasicMaterial({
+        color : 0xffffff,
+        wireframe: true
+    })
+    //Adds a wire "hitbox" to the model for visualization
+    //(Wire hitbox doesn't really matter though, may be removed in the future)
+    model.add(new THREE.Mesh(cube, wireMat));
+
+    // const mesh = new THREE.Mesh(icoSphere, mat);
+    // mesh.material = wireMat;
+
+    //Creates a plane used as a base plate
+    const planeGeo = new THREE.PlaneGeometry( 10, 10 , 5, 5);
+    const material = new THREE.MeshBasicMaterial( {color: 0xff00ff, side: THREE.DoubleSide, transparent : true, opacity : 0.5} );
+    // const wallMat = new THREE.MeshBasicMaterial({color: 0x00ff00, transparent : false, opacity: 0.5})
+    const wireframe = new THREE.WireframeGeometry( planeGeo );
+    const line = new THREE.LineSegments( wireframe );
+
+    const plane = new THREE.Mesh( planeGeo, material );
+    plane.add(line) //Adds wireframe lines to create a grid-like visualization that the user will be moving along
+    plane.name = "plane" //Naming for reference
+    base.add( plane ); //Adds plane to the actual world
+    plane.position.z -= 1.05;//An extra 0.05 to prevent clipping
+
+}
 
 function buildMap(map, objectBase){
     let size = map.length;
@@ -422,7 +462,6 @@ function boarderGenerator(size, objectBase){
     }
 }
 
-
 function checkForWall(object, map){
     console.log(object.position)
     let size = map.length;
@@ -442,10 +481,11 @@ function checkForWall(object, map){
     return map[pos_y][pos_x] == 1;
 }
 
-//Button Functions
-const unit_multiplier = 2;
 
-//These functions have been made obsolite with the new dragging system which should be more interactive for users.
+
+/*These functions have been made obsolite
+//with the new dragging system which should be more interactive for users.
+
 window.move_forward = function(distance){
     distance *= unit_multiplier;
     compiler.AddBlocks(Direction.Forward, distance, Type.Translation);
@@ -459,8 +499,17 @@ window.move_strafe = function(distance){
 window.move_rotate = function(degrees){
     compiler.AddBlocks(Direction.Clockwise, degrees, Type.Rotation)
 }
-
+//Delete block is obsolite, as drag and drop can now delete blocks.
+window.deleteBlock = function(){
+    compiler.RemoveBlocks();
+};
+*/
 //These functions can still prove useful
+
+//-------------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------<HTML Button Functions>--------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------------------------------
+//Simply runs the program when clicked.
 window.compile = function(){
     // compiler.CompileBlocks(document.getElementById("FC_checkbox").checked);
     // console.log(block_dictionary["Compiler"]);
@@ -468,10 +517,8 @@ window.compile = function(){
         block_dictionary["Compiler"].ActivateBlock(model, document.getElementById("FC_checkbox").checked, activeMap);
     }
 };
-//Delete block is obsolite, as drag and drop can now delete blocks.
-// window.deleteBlock = function(){
-//     compiler.RemoveBlocks();
-// };
+//Clears all blocks from the workspace and from the 
+//internal system that controls all the blocks
 window.clearBlocks = function(){
     // compiler.ClearBlocks();//Obsolite method
 
@@ -501,16 +548,4 @@ window.resetObject = function(){
 }
 
 
-function rotate_y_axis(factor) {
-    let rotation = model.rotation.y;
-    rotation += rotationSpeed * factor
-    rotation %= Math.PI * 2
-    // base.scale.addScalar(rotation);
-    // console.log(typeof(base.scale.x));
-    // console.log(Number(base.scale.x));
-    // model.rotation.y = rotation
-}
 
-
-//Clamp function
-const clamp = (num, min, max) => Math.min(Math.max(num, min), max);

@@ -1,4 +1,3 @@
-
 //Enum Typings
 export const Direction = {
     Forward: 'Forward',
@@ -11,17 +10,24 @@ export const Type = {
     Compiler: 'Compiler'
 }
 
+/* Program states currently have no effect, but may be implemented in the future...?
 const State = {
     Idle: 'Idle',
     Running: 'Running',
     Crashed: 'Crashed',
 }
-
-const unit_multiplier = 2;
 let ProgramState = State.Idle;
+*/
 
-//Class object for a compiled version of blocks
-export default class BlockCompiler{
+//Unit multiplier - MUST MATCH Event Handler unit multiplier.
+const unit_multiplier = 2;
+
+
+/*Class object for a compiled version of blocks
+//Unforunately, this entire class has been made obsolite by the recent update that makes
+//Blocks compile on a Linked List system rather than using an array of all compiled blocks.
+
+export class BlockCompiler{
 
     //------------------------------------------------------------Core functions for program-----------------------------------------------------------
     constructor(object, list, map){
@@ -166,13 +172,12 @@ export default class BlockCompiler{
         }
         return ui_text;
     }
-
 }
-
+*/
 
 
 //Class object for block commands 
-export class Block{
+export default class Block{
     
 
     constructor(direction, magnitude, type, UI) {
@@ -241,10 +246,10 @@ export class Block{
                 self.nextBlock.ActivateBlock(object, field_centric, map);
             }
             //If the next block in the sequence is "undefined", this means the sequence has come to an end
-            else{
-                ProgramState = State.Idle;
-                // console.log("Finished Moving");
-            }
+            // else{
+            //     // ProgramState = State.Idle;
+            //     // console.log("Finished Moving");
+            // }
         }
         , animation_duration + animation_delay);
     }
@@ -318,13 +323,25 @@ export class Block{
     }
 }
 
+//-------------------------------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------<Animation Code>-----------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------------------------------
 
-
+//Delay constants
 const animation_duration = 500; //ms - Duration of each translation/rotation.
 const animation_delay = 50; //ms - Delay between each block activating. Neccessary from having animations overlap and causing buggy animations
+//Some variables used to track the progression of the program/animation
 let start;
 let anim_complete = false;
 
+//Enums of different animation progression rates
+const AnimationTypes = {
+    Linear: "Linear",
+    Parabolic: "Parabolic",
+    Inverse_Parabolic : "I-Parabolic",
+    Circle: "Circle",
+    S_Circle: "S-Circle"
+}
 
 //Storage related to information about the animation requirements (since parameters cannot be used)
 const anim_cache = {
@@ -333,10 +350,15 @@ const anim_cache = {
     model : undefined,
     field_centric : true,
     start_pos : new THREE.Vector3(0,0,0)//{ "x" : 0 , "y" : 0 , "z": 0}
-    
 }
 
-//A function for easily editing the animation cache
+/** A function for easily editing the animation cache
+ * This was neccessary due to the inability to pass extra parameters when calling the requestAnimationFrame() built in function.
+ * @param {Object}  model           The passed object that will be moved when the animation is played.
+ * @param {String}  axis            The directional axis the object will move.
+ * @param {number}  distance        The distance the robot will travel (Multiplied with unit multiplier to be in units visualized in the screen).
+ * @param {boolean} field_centric   Whether or not the robot should take into account it's own rotation when moving.
+ */
 function setUpAnimCache(model, axis, distance, field_centric = true){
     // console.log(model, axis, distance);
     anim_cache.model = model;
@@ -385,6 +407,9 @@ function setUpAnimCache(model, axis, distance, field_centric = true){
 }
 
 //Function for the animation related to object translation
+/** This function will take the anim_cache information to create the animation effect in conjunction with requestAnimationFrame().
+ * @param {number} timeStamp The time in miliseconds in which this function was called.
+ */
 function anim_translate(timeStamp){
     //This is the first call of the wrapper?
     if (start === undefined) {
@@ -414,6 +439,9 @@ function anim_translate(timeStamp){
     }
 }
 
+/** A special animation played when colliding with a wall
+ * @param {number} timeStamp The time in miliseconds in which this function was called.
+ */
 function anim_hitWall(timeStamp){
     //This is the first call of the wrapper?
     if (start === undefined) {
@@ -444,13 +472,6 @@ function anim_hitWall(timeStamp){
     }
 }
 
-const AnimationTypes = {
-    Linear: "Linear",
-    Parabolic: "Parabolic",
-    Inverse_Parabolic : "I-Parabolic",
-    Circle: "Circle",
-    S_Circle: "S-Circle"
-}
 /** Manipulates the inputted animation completion rate and returns
  * a corresponding multiplier for the desired animation.
  * @param {AnimationType} type   A Pre-defined type of animation. 
@@ -501,11 +522,22 @@ function animation_rates(type, rate){
 }
 
 
+//-------------------------------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------<Math Functions>-----------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------------------------------
 
+/** Converts radian values into degrees
+ * @param {number} radians 
+ * @returns {number} The converted value in degrees
+ */
 export function radians_to_degrees(radians) {
     return radians * (180 / Math.PI) % 360;
 }
 
+/** Converts degrees into radian values
+ * @param {number} degrees
+ * @returns {number} The converted value in radians
+ */
 export function degrees_to_radians(degrees) {
     return degrees * (Math.PI / 180);
 }
