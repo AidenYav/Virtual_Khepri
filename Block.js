@@ -22,7 +22,9 @@ let ProgramState = State.Idle;
 //Unit multiplier - MUST MATCH Event Handler unit multiplier.
 const unit_multiplier = 2;
 
-
+//-------------------------------------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------<Block Compiler Class>-------------------------------------------------------------
+//---------------------------------------------------------------<Unused>--------------------------------------------------------------------
 /*Class object for a compiled version of blocks
 //Unforunately, this entire class has been made obsolite by the recent update that makes
 //Blocks compile on a Linked List system rather than using an array of all compiled blocks.
@@ -175,11 +177,19 @@ export class BlockCompiler{
 }
 */
 
+//-------------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------<Block Class>------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------------------------------
 
 //Class object for block commands 
 export default class Block{
     
-
+    /** Constructor for the Block object.
+     * @param {String} direction A Direction Enum that determines the axis the object should be moved
+     * @param {number} magnitude Typically an integer (mostly 1) that determines how many units the object should move.
+     * @param {String} type      A Type Enum that describes the type of movement/animation that should be played (Technically obsolite) 
+     * @param {Object} UI        The html element object related to this block code
+     */
     constructor(direction, magnitude, type, UI) {
         this.direction = direction; // Direction to be moved
         this.magnitude = magnitude; // Distance to be moved
@@ -188,8 +198,7 @@ export default class Block{
         this.nextBlock = undefined; //This will work as a pointer to the next command block (Linked List Style)
     }
 
-    /**
-     * Activates the premade block program to translate or rotate the object
+    /**Activates the premade block program to translate or rotate the object
      * @param {object3D} object                 A passed 3D object to move.
      * @param {boolean} [field_centric = true]  A boolean that determines if the object should move relative to it's own 
      *                                          orientation or from the camera's orientation. Defaults to true.
@@ -235,11 +244,11 @@ export default class Block{
 
         //Set a cooldown/timer to play the animations
         const self = this; //Since this function would not have access to the "this" keyword, use the variable "self" to reference the Block Object
-        this.highlightBlock(true); //Highlights the current block
+        this.HighlightBlock(true); //Highlights the current block
         //This timeout function acts as a buffer so this block's animation can be completed before running the next block animation.
         setTimeout( function(){
 
-            self.highlightBlock(false); //Before activating the next block (or ending the sequence), deactivate the current block's highlight
+            self.HighlightBlock(false); //Before activating the next block (or ending the sequence), deactivate the current block's highlight
 
             //If the next block exists, run that block's program/animation
             if(self.nextBlock != undefined){
@@ -254,6 +263,11 @@ export default class Block{
         , animation_duration + animation_delay);
     }
 
+    /** Determines of the passed position intersects with a wall.
+     * @param {Object}         position    The position of the object, typically a Vector2 object is passed as the position parameter
+     * @param {Array[int][int]} map         A 2d integer array of values used to build the active "map" that the user navigates through
+     * @returns 
+     */
     checkForWall(position, map){
         // console.log(position);
         let size = map.length;
@@ -272,54 +286,65 @@ export default class Block{
         //Returns False if there is no wall
         return map[pos_y][pos_x] == 1;
     }
-
-    // TranslateBlock(object){
-    //     if (this.direction === Direction.Forward){
-    //         setUpAnimCache(object,"z", this.magnitude);
+    /* Obsolite animation code
+    TranslateBlock(object){
+        if (this.direction === Direction.Forward){
+            setUpAnimCache(object,"z", this.magnitude);
             
-    //     }
-    //     else if (this.direction === Direction.Left){
-    //         setUpAnimCache(object,"x", this.magnitude);
-    //     }
-    //     else{
-    //         console.warn("Tried to translate object in the " + this.direction + " direction!");
-    //         return;
-    //     }
-    //     requestAnimationFrame(anim_translate);
-    // }
-
-
-    // RotateBlock(object) {
-    //     if (this.direction === Direction.Clockwise){
-    //         // object.rotation.y += degrees_to_radians(this.magnitude);
-    //         setUpAnimCache(object, "y", this.magnitude);
-    //     }
-    //     else{
-    //         console.warn("Tried to rotate object in the " + this.direction + " direction!")
-    //     }
-    //     requestAnimationFrame(anim_translate);
-    // }
-    toString(){
-        return "[ Direction : " + this.direction + " , Magnitude: " + this.magnitude + " , Type : " + this.type + " ]";
+        }
+        else if (this.direction === Direction.Left){
+            setUpAnimCache(object,"x", this.magnitude);
+        }
+        else{
+            console.warn("Tried to translate object in the " + this.direction + " direction!");
+            return;
+        }
+        requestAnimationFrame(anim_translate);
     }
 
-    insertBlock(new_block){
+
+    RotateBlock(object) {
+        if (this.direction === Direction.Clockwise){
+            // object.rotation.y += degrees_to_radians(this.magnitude);
+            setUpAnimCache(object, "y", this.magnitude);
+        }
+        else{
+            console.warn("Tried to rotate object in the " + this.direction + " direction!")
+        }
+        requestAnimationFrame(anim_translate);
+    }
+    */
+    
+
+    /** Sets the next block that should be linked/activated after this block
+     * @param {Block} new_block The Block object that will be the next
+     * @returns {None} Returns nothing, simply returns to end the function early.
+     */
+    InsertBlock(new_block){
         if (new_block == undefined){
             return;
         }
-        new_block.insertBlock(this.new_block); //Inserts the previous next_block as the next_block for this new_block
+        new_block.InsertBlock(this.new_block); //Inserts the previous next_block as the next_block for this new_block
         this.nextBlock = new_block; //Sets this new_block as the current next_block
     }
-
-    clearNextBlock(){
+    
+    /** Simply clears the nextBlock variable by setting it to undefined.
+     */
+    ClearNextBlock(){
         this.nextBlock = undefined;
     }
-    /**
-     * 
+
+    /** Toggles the element's "selected" class, which creates a highlight effect on that block when active.
      * @param {Boolean} toggle To toggle the highlight element
      */
-    highlightBlock(toggle){
+    HighlightBlock(toggle){
         this.element.classList.toggle("selected", toggle);
+    }
+
+    //A helper function to print out the data related to the block. It's not strictly 
+    //needed since web-browsers are typically capable of printing objects into the console.
+    toString(){
+        return "[ Direction : " + this.direction + " , Magnitude: " + this.magnitude + " , Type : " + this.type + " ]";
     }
 }
 
