@@ -43,24 +43,24 @@
     </a-scene >
     <div id="bottom_bar">
         <p id="icon" onclick="toggleBar()">^</p>
-        <div id="workspace_area"><!-- This is the container for the entire workspace area  -->
+        <div class="hidden" id="workspace_area"><!-- This is the container for the entire workspace area  -->
             
             <div class="hidden" id="button_container" >
-
-                    <button  onclick="compile()">Run</button>
-                    <button  onclick="deleteBlock()">Delete</button>
+                    <h4 class="text_info">These are the available blocks you have to complete this small puzzle! Try dragging the blocks into the space on the right!</h4> 
+                <br>
+                    <button  class="spawner" data-type="Compiler" onclick="compile()">Run</button>
+                    <!-- <button  onclick="deleteBlock()">Delete</button> -->
                     <button  onclick="clearBlocks()">Clear All Blocks</button>
                     <button  onclick="resetObject()">Reset</button>
                 <br>
 
-                    <button  onclick="move_forward(1)">Forward</button>
-                    <button  onclick="move_forward(-1)">Backward</button>
-                    <button  onclick="move_strafe(-1)">Left</button>
-                    <button  onclick="move_strafe(1)">Right</button>
+                    <button  class="spawner" data-direction="Forward"   data-magnitude="1"   data-type="Translation" >Forward</button>
+                    <button  class="spawner" data-direction="Forward"   data-magnitude="-1"  data-type="Translation" >Backward</button>
+                    <button  class="spawner" data-direction="Left"      data-magnitude="-1"  data-type="Translation" >Left</button>
+                    <button  class="spawner" data-direction="Left"      data-magnitude="1"   data-type="Translation" >Right</button>
                 <br>
-
-                    <button  onclick="move_rotate(-90)">Turn Left</button>
-                    <button  onclick="move_rotate(90)">Turn Right</button>
+                    <button  class="spawner" data-direction="Clockwise" data-magnitude="-45" data-type="Rotation"    >Turn Left</button>
+                    <button  class="spawner" data-direction="Clockwise" data-magnitude="45"  data-type="Rotation"    >Turn Right</button>
                 <br>
 
                     <input checked type="checkbox" id="FC_checkbox">
@@ -69,12 +69,12 @@
             
 
             <div class="hidden" id="editor_view">
-                <h4 class="text_info">This is an viewing space. Use the buttons on the side to run your program!</h4> <br>
+                <h4 class="text_info">This is an work space. Drag the blocks on the side together to run your program!</h4> <br>
                 <!--  This will be the editor space? -->
-                <ol id="command_list">
+                <!-- <ol id="command_list">
                     <li><label class="command" id="start">Start</label></li>
                     <li><label class="command" id="end">End</label></li>
-                </ol>
+                </ol> -->
 
             </div>
         </div>

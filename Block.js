@@ -7,7 +7,8 @@ export const Direction = {
 };
 export const Type = {
     Translation: 'Translation',
-    Rotation: 'Rotation'
+    Rotation: 'Rotation',
+    Compiler: 'Compiler'
 }
 
 const State = {
@@ -56,7 +57,7 @@ export default class BlockCompiler{
     CompileBlocks(field_centric = true){
         //If the program state is running or crashed, cannot run any other block code until the program is finished
         if (ProgramState != State.Idle) {
-            console.log(ProgramState);
+            // console.log(ProgramState);
             return;
         }
         
@@ -74,10 +75,11 @@ export default class BlockCompiler{
                 }, 
             (animation_duration + animation_delay)*i);
         }
+
         setTimeout(
             function(){
                 ProgramState = State.Idle;
-                console.log("Finished Moving");
+                // console.log("Finished Moving");
             },
             (animation_duration + animation_delay) * this.queue.length
         )
@@ -170,7 +172,7 @@ export default class BlockCompiler{
 
 
 //Class object for block commands 
-class Block{
+export class Block{
     
 
     constructor(direction, magnitude, type, UI) {
@@ -178,6 +180,7 @@ class Block{
         this.magnitude = magnitude; // Distance to be moved
         this.type = type; //Type of movement
         this.element = UI; //UI Element related to the program block
+        this.nextBlock = undefined; //This will work as a pointer to the next command block (Linked List Style)
     }
 
     /**
@@ -189,6 +192,10 @@ class Block{
      * @returns {undefined}                     Does not return anything.
      */
     ActivateBlock(object, field_centric = true, map){
+        if (this.type === Type.Compiler && this.nextBlock != undefined){
+            this.nextBlock.ActivateBlock(object, field_centric, map);
+            return;
+        }
         //Forward drive set up
         if (this.direction === Direction.Forward){
             setUpAnimCache(object,"z", this.magnitude, field_centric);
@@ -213,17 +220,37 @@ class Block{
         
         //Checks if the robot would collide with a "wall"
         if (this.checkForWall( object.position.clone().add(new THREE.Vector3(anim_cache.distance.x, anim_cache.distance.z, 0)) ,map)){
-            console.log("Hit obsticle")
+            // console.log("Hit obsticle")
             requestAnimationFrame(anim_hitWall);
         }
         else{
             //The activation of the block will result in an animation, so default call here
             requestAnimationFrame(anim_translate);
         }
+
+        //Set a cooldown/timer to play the animations
+        const self = this; //Since this function would not have access to the "this" keyword, use the variable "self" to reference the Block Object
+        this.highlightBlock(true); //Highlights the current block
+        //This timeout function acts as a buffer so this block's animation can be completed before running the next block animation.
+        setTimeout( function(){
+
+            self.highlightBlock(false); //Before activating the next block (or ending the sequence), deactivate the current block's highlight
+
+            //If the next block exists, run that block's program/animation
+            if(self.nextBlock != undefined){
+                self.nextBlock.ActivateBlock(object, field_centric, map);
+            }
+            //If the next block in the sequence is "undefined", this means the sequence has come to an end
+            else{
+                ProgramState = State.Idle;
+                // console.log("Finished Moving");
+            }
+        }
+        , animation_duration + animation_delay);
     }
 
     checkForWall(position, map){
-        console.log(position);
+        // console.log(position);
         let size = map.length;
         let center = Math.round(size/2);
         let pos_x = center - 1 + Math.round(position.x / unit_multiplier); //Equal to the "column"
@@ -267,6 +294,28 @@ class Block{
     //     }
     //     requestAnimationFrame(anim_translate);
     // }
+    toString(){
+        return "[ Direction : " + this.direction + " , Magnitude: " + this.magnitude + " , Type : " + this.type + " ]";
+    }
+
+    insertBlock(new_block){
+        if (new_block == undefined){
+            return;
+        }
+        new_block.insertBlock(this.new_block); //Inserts the previous next_block as the next_block for this new_block
+        this.nextBlock = new_block; //Sets this new_block as the current next_block
+    }
+
+    clearNextBlock(){
+        this.nextBlock = undefined;
+    }
+    /**
+     * 
+     * @param {Boolean} toggle To toggle the highlight element
+     */
+    highlightBlock(toggle){
+        this.element.classList.toggle("selected", toggle);
+    }
 }
 
 
@@ -289,6 +338,7 @@ const anim_cache = {
 
 //A function for easily editing the animation cache
 function setUpAnimCache(model, axis, distance, field_centric = true){
+    // console.log(model, axis, distance);
     anim_cache.model = model;
     anim_cache.axis = axis;
     anim_cache.field_centric = field_centric;

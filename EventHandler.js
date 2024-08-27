@@ -1,9 +1,11 @@
 // import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import BlockCompiler, { Direction, Type, degrees_to_radians, radians_to_degrees } from "./Block.js";
+import BlockCompiler, { Block, Direction, Type, degrees_to_radians, radians_to_degrees } from "./Block.js";
 
 
 console.log("Hello World!")
 const screen = document.getElementById('screen'); // Get a reference to an element
+const workspace_area = document.getElementById('workspace_area');
+const editor_view_area = document.getElementById('editor_view');
 if (screen == null){
     console.log("Could not find screen")
 }
@@ -12,13 +14,14 @@ else{
 }
 
 const hammer = new Hammer(screen); // Create an instance of Hammer with the reference
+const workspace_events = new Hammer(workspace_area);
 // console.log("Hello World!")
 hammer.get('pan').set({ direction: Hammer.DIRECTION_ALL });
-
+workspace_events.get('pan').set({ direction: Hammer.DIRECTION_ALL });
 // const model = document.getElementById("model");
 
 const base = document.getElementById("base").object3D;
-
+let block_dictionary = {counter : 0};
 const loader = new THREE.GLTFLoader();
 let activeMap = undefined;
 let model = undefined;
@@ -109,6 +112,172 @@ let lastTapTime = 0;
 let lastRotateTime = 0;
 
 let currentScale = base.scale.x;
+
+let last_clicked_block = undefined;
+let pan_inprogress = false;
+const drag_offset = 20;
+
+workspace_events.on("panleft panright panup pandown panend", function(ev){
+    if (!pan_inprogress){
+        // console.log(ev.center.x, ev.center.y);
+        // console.log(ev.target.classList);
+        // console.log(ev.center.y- window.screen.height*0.5);
+        if(ev.target.classList.contains("spawner")){
+            // console.log("Hi")
+            last_clicked_block = create_draggable_block(ev.target);
+            // ev.target.click();
+        }
+        if (ev.target.classList.contains("draggable")){
+            last_clicked_block = ev.target;
+            unsnap_detection(last_clicked_block);
+        }
+        pan_inprogress = true;
+    }
+    //Moves the draggable object as the mouse moves, giving the user a perception that they are actively moving the object.
+    if(pan_inprogress && last_clicked_block != undefined){
+        last_clicked_block.style.left = ev.center.x + 'px';
+        last_clicked_block.style.top = ev.center.y - workspace_area.getBoundingClientRect().top + drag_offset + 'px';
+    }
+    if (ev.type == "panend"){
+        /* Some data information checks
+        // console.log(last_clicked_block);
+        // console.log(ev.center.x, ev.center.y);
+        // console.log("Pan ended");*/
+
+
+        pan_inprogress = false;
+        
+
+        //After the draggable is placed, do connection checks
+        //Snap check (chains together draggables)
+        if (last_clicked_block != undefined){
+            // console.log(last_clicked_block.dataset.identifier);
+            delete_block_check(last_clicked_block); //Checks if the block should be deleted after being dragged to a delete zone
+            snap_blocks(last_clicked_block);
+        }
+        
+        last_clicked_block = undefined; //Clear only at the end
+    }
+});
+const snapThreshold = 10; //20 pixels
+function snap_blocks(original){
+    //Retrieves all active draggable objects. This is a non-live list, so recheck this list every call.
+    //Could be optimize to check only every new draggable creation but may get messy when reading between different events and functions
+    const draggables = document.querySelectorAll('.draggable');
+    
+    for(let i=0; i<draggables.length; i++){
+        let other = draggables[i];
+        if (original !== other) {
+            //Get the position of the 2 boxes this is going to snap to
+            let originalRect = original.getBoundingClientRect();
+            let otherRect = other.getBoundingClientRect();
+
+            //Skips this loop if the compared boxes are not even in the same X area
+            if(originalRect.left > otherRect.right + snapThreshold ||
+                originalRect.right < otherRect.left - snapThreshold){
+                // console.log(originalRect.left - otherRect.right,originalRect.right - otherRect.left)
+            }
+            //Snaps the block to the bottom of the other one
+            //Snapping to the bottom takes priority
+            else if (Math.abs(originalRect.top - otherRect.bottom) < snapThreshold) {
+                original.style.top = otherRect.bottom - workspace_area.getBoundingClientRect().top  + drag_offset*1.5 +  'px';
+                // console.log(otherRect.bottom, original.getBoundingClientRect().top)
+                original.style.left = otherRect.left +'px';
+                // console.log("Snap Bottom")
+                //Sets the placed block to run after the other block
+                // console.log(block_dictionary[other.dataset.identifier])
+                block_dictionary[other.dataset.identifier].insertBlock(block_dictionary[original.dataset.identifier]);
+                //Overlap check
+                return;
+            }
+            //Snaps the block to the top of the other one
+            else if (Math.abs(originalRect.bottom - otherRect.top) < snapThreshold) {
+                original.style.top = otherRect.top - originalRect.height - workspace_area.getBoundingClientRect().top + drag_offset*1.3 + 'px';
+                original.style.left = otherRect.left +'px';
+                // console.log("Snap Top")
+                //Sets the other block to run after the place block is activated
+                block_dictionary[original.dataset.identifier].insertBlock(block_dictionary[other.dataset.identifier]);
+                //Overlap check
+                return;
+            } 
+
+        }
+    }
+}
+
+function unsnap_detection(original){
+    const draggables = document.querySelectorAll('.draggable');
+    block_dictionary[original.dataset.identifier].clearNextBlock(); //Delete whatever child command was here previously since this block is being moved.
+    for(let i=0; i<draggables.length; i++){
+        let other = draggables[i];
+        if (original !== other) {
+            let originalRect = original.getBoundingClientRect();
+            let otherRect = other.getBoundingClientRect();
+            //Bottom unsnapping is the primary issue
+            if (Math.abs(originalRect.top - otherRect.bottom) < snapThreshold && 
+                originalRect.left == otherRect.left){
+                //If this is true, then the other block must be the parent of this block, and it's child command needs to be deleted
+                // console.log("Unsnapped from block", other.dataset.identifier);
+                block_dictionary[other.dataset.identifier].clearNextBlock();
+            }
+        }
+    }
+}
+
+function delete_block_check(block){
+    let block_box = block.getBoundingClientRect();
+    if (block_box.top < editor_view_area.getBoundingClientRect().top || 
+        block_box.left < editor_view_area.getBoundingClientRect().left){
+
+        //Checks that the block exists before running the delete command, although it should be guranteed that it does exist
+        if (block.dataset.identifier in block_dictionary){
+            delete block_dictionary[block.dataset.identifier] //Theoretically should release the memory space of the object
+        }
+        else{
+            console.warn("Block data wasn't in the dictionay to delete...");
+        }
+        block.remove(); //Actually delete the object from the page
+        
+    }
+}
+
+
+function create_draggable_block(source_block){
+    const block = document.createElement("label");
+    block.textContent = source_block.textContent;
+    block.className = "draggable command selected";
+    block.classList.toggle("selected", false);
+
+    let newBlockData = undefined
+    if (source_block.dataset.type == "Compiler"){
+        //Only 1 "Compiler" should exist at any one time, at least for 1 specific object.
+        if ("Compiler" in block_dictionary){
+            block_dictionary["Compiler"].remove();
+            delete block_dictionary["Compiler"];
+        }
+        newBlockData = new Block( 
+            "Forward", 
+            0, 
+            source_block.dataset.type, 
+            block);
+        block.dataset.identifier = "Compiler";
+        block.id = "start";
+    }
+    else{
+        newBlockData = new Block( 
+            source_block.dataset.direction, 
+            source_block.dataset.magnitude * unit_multiplier, 
+            source_block.dataset.type, 
+            block);
+        block.dataset.identifier = block_dictionary.counter;
+        block_dictionary.counter++;
+    }
+    
+    block_dictionary[block.dataset.identifier] = newBlockData;
+    workspace_area.append(block);
+    return block;
+}
+
 // listen to events...
 hammer.get('pinch').set({ enable: true });
 hammer.on("panleft panright panup pandown tap press pinch pinchend", function(ev) {
@@ -275,10 +444,11 @@ function checkForWall(object, map){
 
 //Button Functions
 const unit_multiplier = 2;
+
+//These functions have been made obsolite with the new dragging system which should be more interactive for users.
 window.move_forward = function(distance){
     distance *= unit_multiplier;
     compiler.AddBlocks(Direction.Forward, distance, Type.Translation);
-
     // let text = distance < 0 ? "Forward" : "Backward";
     // add_command(text,current_command);
 };
@@ -289,17 +459,45 @@ window.move_strafe = function(distance){
 window.move_rotate = function(degrees){
     compiler.AddBlocks(Direction.Clockwise, degrees, Type.Rotation)
 }
+
+//These functions can still prove useful
 window.compile = function(){
-    compiler.CompileBlocks(document.getElementById("FC_checkbox").checked);
+    // compiler.CompileBlocks(document.getElementById("FC_checkbox").checked);
+    // console.log(block_dictionary["Compiler"]);
+    if (block_dictionary["Compiler"] != undefined){
+        block_dictionary["Compiler"].ActivateBlock(model, document.getElementById("FC_checkbox").checked, activeMap);
+    }
 };
-window.deleteBlock = function(){
-    compiler.RemoveBlocks();
-};
+//Delete block is obsolite, as drag and drop can now delete blocks.
+// window.deleteBlock = function(){
+//     compiler.RemoveBlocks();
+// };
 window.clearBlocks = function(){
-    compiler.ClearBlocks();
+    // compiler.ClearBlocks();//Obsolite method
+
+    //Retrieve a full list of keys to loop through
+    const keys = Object.keys(block_dictionary);
+    for(let i=0; i < keys.length; i++){
+        //Ensures that the key is a valid key of the dictionary (which should be guranteed but this is an extra check)
+        if (keys[i] in block_dictionary){
+            //Deletes the visualized block object from the screen
+            if (block_dictionary[keys[i]].element != undefined){
+                block_dictionary[keys[i]].element.remove();
+            }
+            //Deletes the block object from the internal system that manages all blocks
+            delete block_dictionary[keys[i]];
+        }
+        else{
+            console.warn("Tried to delete a key that didn't exist?\nKey:", keys[i]);
+        }
+    }
+    //The counter will be deleted by the previous code, so reassign the counter key-value at the end.
+    block_dictionary["counter"] = 0;
 }
 window.resetObject = function(){
-    compiler.ResetObject();
+    // compiler.ResetObject();
+    model.position.set(0,0,1);
+    model.rotation.set(-Math.PI/2, 0 ,0);
 }
 
 

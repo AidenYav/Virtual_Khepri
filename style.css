@@ -68,7 +68,7 @@
 
 .command{
     
-    margin-left: 5px;
+    /* margin-left: 5px; */
     padding-left: 5px;
     padding-right: 5px;
     border-color: black;
@@ -86,4 +86,8 @@
 }
 #end{
     background-color: rgb(255, 170, 170);
+}
+
+.draggable{
+    position: absolute;
 }
