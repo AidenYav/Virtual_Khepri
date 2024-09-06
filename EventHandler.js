@@ -1,6 +1,6 @@
 //Import of the custom Block Object
-import Block, { degrees_to_radians, radians_to_degrees } from "./Block.js";
-
+import Block from "./Block.js";
+import radians_to_degrees, { degrees_to_radians } from "./MathFunctions.js";
 
 console.log("Hello World!");
 //Initialize elements that will serve as a base for all event listeners.
@@ -25,12 +25,13 @@ workspace_events.get('pan').set({ direction: Hammer.DIRECTION_ALL });
 
 //Objects/constants necessary to build/load the scene
 const base = document.getElementById("base").object3D;
+const base_no_camera = document.getElementById("base_no_camera").object3D;
 const loader = new THREE.GLTFLoader();
 
 //Variables used to track/record the active map and current object model
 let activeMap = undefined;
 let model = undefined;
-
+let model_no_camera = undefined;
 //A dictionary container that will be used to control all blocks currently on screen
 let block_dictionary = {counter : 0};
 
@@ -46,11 +47,17 @@ loader.load(
         model.scale.multiplyScalar(0.6);
         model.position.z += 1;
         model.rotation.x -= degrees_to_radians(90);
+        model_no_camera = model.clone();
         //Base set up
         base.name = "base";
         base.add( model );
+        base_no_camera.name = "base_no_camera";
+        base_no_camera.add(model_no_camera);
         //World set up
-        loadWorld();
+        loadWorld(base);
+        loadWorld(base_no_camera);
+        // console.log(base_no_camera)
+        base_no_camera.visible =  false;
     },
 
     undefined, 
@@ -118,7 +125,7 @@ workspace_events.on("panleft panright panup pandown panend", function(ev){
 });
 
 /**Checks if the block most recently moved is within range of another block to snap to and chain it together as a program.
- * @param {*} original The (most recent) block that was moved by the user
+ * @param {Object} original The (most recent) block that was moved by the user
  */
 function snap_blocks(original){
     //Retrieves all active draggable objects. This is a non-live list, so recheck this list every call.
@@ -284,24 +291,26 @@ hammer.on("panleft panright panup pandown tap press pinch pinchend", function(ev
     }
 
 
-    if (ev.type == "tap"){
-        const currentTime = Date.now();
-        if (currentTime - lastTapTime < doubleTapThreshold) {
-            // Double tap detected
-            //console.log('Double tap detected!');
-            // model.position.y += gravity * 0.01
-        } else {
-            // Single tap detected
-            // model.position.y -= gravity * 0.01
-            //console.log('Single tap detected');
-            // console.log(checkForWall(model, activeMap));
-            // console.log(radians_to_degrees(model.rotation.x) +"\n"+ radians_to_degrees(model.rotation.y) +"\n"+ radians_to_degrees(model.rotation.z))
-        }
-        // console.log(currentTime - lastTapTime)
-        lastTapTime = currentTime;
-   }
+//     if (ev.type == "tap"){
+//         const currentTime = Date.now();
+//         if (currentTime - lastTapTime < doubleTapThreshold) {
+//             // Double tap detected
+//             //console.log('Double tap detected!');
+//             // model.position.y += gravity * 0.01
+//         } else {
+//             // Single tap detected
+//             // model.position.y -= gravity * 0.01
+//             //console.log('Single tap detected');
+//             // console.log(checkForWall(model, activeMap));
+//             // console.log(radians_to_degrees(model.rotation.x) +"\n"+ radians_to_degrees(model.rotation.y) +"\n"+ radians_to_degrees(model.rotation.z))
+//         }
+//         // console.log(currentTime - lastTapTime)
+//         lastTapTime = currentTime;
+//    }
 
-   
+   if (ev.type == "tap"){
+    console.log('Camera Position:', camera.position);
+   }
 
    hammer.on("swipe pan", (ev) =>{
     const currentTime = Date.now()
@@ -357,7 +366,7 @@ const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
 //-------------------------------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------<World Building Functions>-------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------------------------------
-function loadWorld() {
+function loadWorld(base) {
     //Creates new map
     activeMap = [   [ 0 , 0 , 0 , 0 , 0 ],
                     [ 1 , 1 , 1 , 1 , 0 ],
@@ -404,7 +413,7 @@ function loadWorld() {
 function buildMap(map, objectBase){
     let size = map.length;
     let center = Math.round(size/2);
-    console.log(center)
+    // console.log(center)
     //Creates boarder
     boarderGenerator(size, objectBase)
 
@@ -462,6 +471,7 @@ function boarderGenerator(size, objectBase){
     }
 }
 
+/*Moved/integrated into Block.js
 function checkForWall(object, map){
     console.log(object.position)
     let size = map.length;
@@ -480,7 +490,7 @@ function checkForWall(object, map){
     //Returns False if there is no wall
     return map[pos_y][pos_x] == 1;
 }
-
+*/
 
 
 /*These functions have been made obsolite
@@ -504,17 +514,19 @@ window.deleteBlock = function(){
     compiler.RemoveBlocks();
 };
 */
-//These functions can still prove useful
+
 
 //-------------------------------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------<HTML Button Functions>--------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------------------------------
 //Simply runs the program when clicked.
+//These functions can still prove useful
 window.compile = function(){
     // compiler.CompileBlocks(document.getElementById("FC_checkbox").checked);
     // console.log(block_dictionary["Compiler"]);
     if (block_dictionary["Compiler"] != undefined){
         block_dictionary["Compiler"].ActivateBlock(model, document.getElementById("FC_checkbox").checked, activeMap);
+        block_dictionary["Compiler"].ActivateBlock(model_no_camera, document.getElementById("FC_checkbox").checked, activeMap);
     }
 };
 //Clears all blocks from the workspace and from the 
@@ -545,7 +557,36 @@ window.resetObject = function(){
     // compiler.ResetObject();
     model.position.set(0,0,1);
     model.rotation.set(-Math.PI/2, 0 ,0);
+    model_no_camera.position.set(0,0,1);
+    model_no_camera.rotation.set(-Math.PI/2, 0 ,0);
 }
+var camera = document.querySelector('a-entity').object3D;
+window.toggleCamera = function(){
+    const video = document.querySelector('video');
+    let marker = document.querySelector('a-marker');
+    var base_cameraless = document.getElementById('base_no_camera');
+    const world = document.querySelector('a-box');
+    console.log(world);
+    if (video.srcObject) {
+        // Stop all video tracks
+        video.srcObject.getTracks().forEach(track => track.stop());
+        video.srcObject = null;
 
+        base_no_camera.visible = true;
+        base.visible = false;
+        base.position.set(0,0,0) // Adjust position as needed
+        // base.position.z -= 10;
+      } else {
+        // Restart the camera
+        navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+          video.srcObject = stream;
+
+          base_no_camera.visible = false;
+          base.visible = true;
+        //   console.log(marker.getAttribute('visible'));
+          base.position.set(0,0,0);
+        });
+    }
+}
 
 

@@ -24,13 +24,15 @@
     <!-- Local and homemade files -->
     <link rel="stylesheet" href="style.css">
     <script type = "module" src ="EventHandler.js"></script>
+    <script type = "module" src ="Animation.js"></script>
     <script type = "module" src ="Block.js"></script>
+    <script type = "module" src ="MathFunctions.js"></script>
     <script type = "text/javascript" src="UserInterface.js"></script>
 </head>
 <body>
-
+    
     <!-- Create an AR scene -->
-    <a-scene embedded arjs=" sourceType: webcam; debugUIEnabled: false;" id="screen">
+    <a-scene embedded arjs=" sourceType: webcam; debugUIEnabled: false; trackingMethod: best;" id="screen">
         <!-- Uses a custom marker to display the model -->
         <a-marker preset="custom" type="pattern" url="Markers/pattern-Triangle.patt">
 
@@ -38,10 +40,13 @@
             <a-box position="0 0 0" scale="0.5 0.5 0.5" rotation="-90 0 0" material="opacity: 0;" id="base"></a-box>
             <!-- <a-entity gltf-model="Models/Pyramid.glb" position="0 0 0" scale="0.4 0.4 0.4" rotation = "0 180 0" id="model"></a-entity> -->
         </a-marker>
+        <a-box position="0 0 -10" scale="0.5 0.5 0.5" rotation="0 0 0" material="opacity: 1;" id="base_no_camera" ></a-box>
         <!-- Display the camera feed  -->
         <a-entity camera id="camera"></a-entity>
     </a-scene >
+    
     <div id="bottom_bar">
+        <button onclick="toggleCamera()" id="cameraToggle">Toggle Camera Mode</button>
         <p id="icon" onclick="toggleBar()">^</p>
         <div class="hidden" id="workspace_area"><!-- This is the container for the entire workspace area  -->
             

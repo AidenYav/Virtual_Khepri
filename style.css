@@ -77,6 +77,12 @@
     outline: auto;
 }
 
+#cameraToggle{
+    position: absolute;
+    bottom: 100%;
+    border-color:blueviolet;
+}
+
 .selected{
     background-color: yellow;
 }
