@@ -17,3 +17,8 @@ export default function radians_to_degrees(radians) {
 export function degrees_to_radians(degrees) {
     return degrees * (Math.PI / 180);
 }
+
+//Clamp function
+export function clamp(num, min, max){
+    return Math.min(Math.max(num, min), max);
+} 

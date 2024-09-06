@@ -1,6 +1,6 @@
 //Import of the custom Block Object
 import Block from "./Block.js";
-import radians_to_degrees, { degrees_to_radians } from "./MathFunctions.js";
+import radians_to_degrees, { degrees_to_radians, clamp } from "./MathFunctions.js";
 
 console.log("Hello World!");
 //Initialize elements that will serve as a base for all event listeners.
@@ -29,6 +29,7 @@ const base_no_camera = document.getElementById("base_no_camera").object3D;
 const loader = new THREE.GLTFLoader();
 
 //Variables used to track/record the active map and current object model
+let no_camera_mode_active = false;
 let activeMap = undefined;
 let model = undefined;
 let model_no_camera = undefined;
@@ -261,10 +262,10 @@ function create_draggable_block(source_block){
 //However, it does have the function of pinch zooming to increase/decrease the size of the scene (mobile only)
 
 //Initialization of constant values
-const rotationSpeed = 0.0001; // Adjust as needed
+const rotationSpeed = 0.01; // Adjust as needed
 const doubleTapThreshold = 300; // Maximum time (in milliseconds) between taps for double tap
 const max_x_rotation = degrees_to_radians(45); //Maximum rotation on the x-axis relative to it's initial start rotation/x_offset
-const x_offset = degrees_to_radians(-90); //The starting rotation of the object
+const x_offset = degrees_to_radians(0); //The starting rotation of the object
 //Initialization of variables used to record and track program states
 let lastTapTime = 0;
 let lastRotateTime = 0;
@@ -283,6 +284,7 @@ hammer.on("panleft panright panup pandown tap press pinch pinchend", function(ev
         //At this point, processed scale can take in other constraints such as clamps
         processedScale = clamp(processedScale, 0.1, 5);
         base.scale.set(processedScale,  processedScale,  processedScale);
+        base_no_camera.set(processedScale, processedScale, processedScale);
     }
 
     if (ev.type == "pinchend"){
@@ -308,45 +310,45 @@ hammer.on("panleft panright panup pandown tap press pinch pinchend", function(ev
 //         lastTapTime = currentTime;
 //    }
 
-   if (ev.type == "tap"){
-    console.log('Camera Position:', camera.position);
-   }
-
-   hammer.on("swipe pan", (ev) =>{
-    const currentTime = Date.now()
-    if (currentTime - lastRotateTime < 10){
-        
-        switch(ev.direction){
-            case Hammer.DIRECTION_LEFT:
-                rotate_y_axis(1);
-                break;
-            case Hammer.DIRECTION_RIGHT:
-                rotate_y_axis(-1);
-                break;
-            // Add more cases for up and down if desired
-            case Hammer.DIRECTION_DOWN:
-                // console.log("Down");
-                rotate_x_axis(1);
-                break;
-            case Hammer.DIRECTION_UP:
-                rotate_x_axis(-1);
-                break;
-            default:
-                break;
-        }
+    if (ev.type == "tap"){
+        console.log(radians_to_degrees(base_no_camera.rotation.y));
     }
-    lastRotateTime = currentTime;
-    })
+    
+    if (no_camera_mode_active && (ev.type == "swipe" || ev.type.startsWith("pan"))){
+        const currentTime = Date.now()
+        if (currentTime - lastRotateTime < 10){
+            
+            switch(ev.direction){
+                case Hammer.DIRECTION_LEFT:
+                    rotate_y_axis(-1);
+                    break;
+                case Hammer.DIRECTION_RIGHT:
+                    rotate_y_axis(1);
+                    break;
+                // Add more cases for up and down if desired
+                case Hammer.DIRECTION_DOWN:
+                    // console.log("Down");
+                    rotate_x_axis(1);
+                    break;
+                case Hammer.DIRECTION_UP:
+                    rotate_x_axis(-1);
+                    break;
+                default:
+                    break;
+            }
+        }
+        lastRotateTime = currentTime;
+    }
     
     
 });
 
 function rotate_x_axis(factor) {
-    let y_rotation = Math.abs(radians_to_degrees(model.rotation.y));
+    // let y_rotation = Math.abs(radians_to_degrees(model.rotation.y));
     // console.log(y_rotation % 180)
-    factor *= y_rotation % 360 < 180 ?  1 : -1;
+    // factor *= y_rotation % 360 < 180 ?  1 : -1;
         
-    model.rotation.x = clamp(model.rotation.x + rotationSpeed * factor, 
+    base_no_camera.rotation.x = clamp(base_no_camera.rotation.x + rotationSpeed * factor, 
         x_offset - max_x_rotation, 
         x_offset + max_x_rotation)
 }
@@ -354,15 +356,14 @@ function rotate_x_axis(factor) {
 function rotate_y_axis(factor) {
     let rotation = model.rotation.y;
     rotation += rotationSpeed * factor
-    rotation %= Math.PI * 2
+    // rotation %= Math.PI * 2
     // base.scale.addScalar(rotation);
     // console.log(typeof(base.scale.x));
     // console.log(Number(base.scale.x));
-    // model.rotation.y = rotation
+    base_no_camera.rotation.y += rotationSpeed * factor;
 }
 
-//Clamp function
-const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
+
 //-------------------------------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------<World Building Functions>-------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------------------------------
@@ -553,38 +554,39 @@ window.clearBlocks = function(){
     //The counter will be deleted by the previous code, so reassign the counter key-value at the end.
     block_dictionary["counter"] = 0;
 }
+//Resets both objects
 window.resetObject = function(){
     // compiler.ResetObject();
+    
     model.position.set(0,0,1);
     model.rotation.set(-Math.PI/2, 0 ,0);
+
     model_no_camera.position.set(0,0,1);
     model_no_camera.rotation.set(-Math.PI/2, 0 ,0);
 }
 var camera = document.querySelector('a-entity').object3D;
 window.toggleCamera = function(){
     const video = document.querySelector('video');
-    let marker = document.querySelector('a-marker');
-    var base_cameraless = document.getElementById('base_no_camera');
-    const world = document.querySelector('a-box');
-    console.log(world);
+
     if (video.srcObject) {
         // Stop all video tracks
         video.srcObject.getTracks().forEach(track => track.stop());
         video.srcObject = null;
+        no_camera_mode_active = true;
 
         base_no_camera.visible = true;
         base.visible = false;
-        base.position.set(0,0,0) // Adjust position as needed
-        // base.position.z -= 10;
+        
+
       } else {
         // Restart the camera
         navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
           video.srcObject = stream;
-
+          no_camera_mode_active = false;
+            
           base_no_camera.visible = false;
           base.visible = true;
-        //   console.log(marker.getAttribute('visible'));
-          base.position.set(0,0,0);
+
         });
     }
 }
