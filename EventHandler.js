@@ -283,8 +283,12 @@ hammer.on("panleft panright panup pandown tap press pinch pinchend", function(ev
         processedScale += currentScale;
         //At this point, processed scale can take in other constraints such as clamps
         processedScale = clamp(processedScale, 0.1, 5);
-        base.scale.set(processedScale,  processedScale,  processedScale);
-        base_no_camera.set(processedScale, processedScale, processedScale);
+        if (no_camera_mode_active){
+            base_no_camera.set(processedScale, processedScale, processedScale);
+        }
+        else{
+            base.scale.set(processedScale,  processedScale,  processedScale);
+        }
     }
 
     if (ev.type == "pinchend"){
@@ -564,7 +568,6 @@ window.resetObject = function(){
     model_no_camera.position.set(0,0,1);
     model_no_camera.rotation.set(-Math.PI/2, 0 ,0);
 }
-var camera = document.querySelector('a-entity').object3D;
 window.toggleCamera = function(){
     const video = document.querySelector('video');
 
