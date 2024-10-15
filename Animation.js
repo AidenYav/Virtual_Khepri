@@ -219,3 +219,15 @@ export default class Animation{
 
     }
 }
+
+
+// import JSConfetti from './'
+
+const jsConfetti = new JSConfetti()
+// window.throwConfetti = function() {
+//     jsConfetti.addConfetti();
+// }
+
+export function throwConfetti(){
+    jsConfetti.addConfetti();
+}

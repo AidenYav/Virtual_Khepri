@@ -10,6 +10,7 @@
     <script src="https://cdn.jsdelivr.net/gh/aframevr/aframe@3f0df33946cf12e3d552b3b4e500dd5b8ff6f692/dist/aframe-master.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js" integrity="sha512-UXumZrZNiOwnTcZSHLOfcTs0aos2MzBWHXOHOuB0J/R44QB0dwY5JgfbvljXcklVf65Gc4El6RjZ+lnwd2az2g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-confetti@latest/dist/js-confetti.browser.js"></script>
     <!-- <script src="https://unpkg.com/three@0.126.0/examples/js/loaders/GLTFLoader.js"></script> -->
     <!-- <script type = "module" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/jsm/controls/OrbitControls.min.js"></script> -->
@@ -25,6 +26,7 @@
     <link rel="stylesheet" href="style.css">
     <script type = "module" src ="EventHandler.js"></script>
     <script type = "module" src ="Animation.js"></script>
+    <script type = "module" src ="MapBuilder.js"></script>
     <script type = "module" src ="Block.js"></script>
     <script type = "module" src ="MathFunctions.js"></script>
     <script type = "text/javascript" src="UserInterface.js"></script>
@@ -45,12 +47,25 @@
         <a-entity camera id="camera"></a-entity>
     </a-scene >
     
+    <div class="hidden" id="levelMenu">
+        <!-- <button class="levelButton"></button>
+        <button class="levelButton"></button>
+        <button class="levelButton"></button>
+        <button class="levelButton"></button> -->
+    </div>
+
+
     <div id="bottom_bar">
-        <button onclick="toggleCamera()" id="cameraToggle">Toggle Camera Mode</button>
+        <div class="cameraButtonContianers">
+            <button onclick="toggleCamera()"    class="cameraButtons" >Toggle Camera Mode</button>
+            <button onclick="switchCam()"       class="cameraButtons">Switch Cameras</button>
+            <button onclick="toggleLevelMenu()" class="cameraButtons">Levels</button>
+            <button onclick="throwConfetti()">Confetti</button>
+        </div>
         <p id="icon" onclick="toggleBar()">^</p>
         <div class="hidden" id="workspace_area"><!-- This is the container for the entire workspace area  -->
             
-            <div class="hidden" id="button_container" >
+            <div  id="button_container" >
                     <h4 class="text_info">These are the available blocks you have to complete this small puzzle! Try dragging the blocks into the space on the right!</h4> 
                 <br>
                     <button  class="spawner" data-type="Compiler" onclick="compile()">Run</button>
@@ -73,7 +88,7 @@
             </div>
             
 
-            <div class="hidden" id="editor_view">
+            <div  id="editor_view">
                 <h4 class="text_info">This is an work space. Drag the blocks on the side together to run your program!</h4> <br>
                 <!--  This will be the editor space? -->
                 <!-- <ol id="command_list">

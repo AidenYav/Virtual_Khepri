@@ -1,3 +1,9 @@
+/*Disables Scrolling*/
+body, html {
+    overflow: hidden;
+  }
+  
+
 #bottom_bar{
     position: absolute;
     bottom: 0;
@@ -77,8 +83,13 @@
     outline: auto;
 }
 
-#cameraToggle{
+
+.cameraButtonContianers{
     position: absolute;
+    bottom: 100%;
+}
+.cameraButtons{
+    position: relative;
     bottom: 100%;
     border-color:blueviolet;
 }
@@ -96,4 +107,32 @@
 
 .draggable{
     position: absolute;
+}
+
+#levelMenu{
+    position: absolute;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    grid-template-rows: repeat(2,-50%);
+    grid-gap: 10px;
+
+    width: 70%;
+    height: 40%;
+
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    border-radius: 20px;
+    background-color: aqua;
+}
+
+.levelButton{
+    margin-top: 10%;
+    margin-left: 5px;
+    width: 90%;
+    aspect-ratio: 1/ 1;
+    /* margin-right: 5%; */
+    
+    border-radius: 10%;
 }

@@ -1,4 +1,5 @@
-import Animation, {animation_duration, animation_delay} from "./Animation.js";
+import Animation, {animation_duration, animation_delay, throwConfetti} from "./Animation.js";
+import _, {unit_multiplier} from "./MapBuilder.js";
 //Enum Typings
 export const Direction = {
     Forward: 'Forward',
@@ -21,7 +22,7 @@ let ProgramState = State.Idle;
 */
 
 //Unit multiplier - MUST MATCH Event Handler unit multiplier.
-const unit_multiplier = 2;
+
 
 //-------------------------------------------------------------------------------------------------------------------------------------------
 //--------------------------------------------------------<Block Compiler Class>-------------------------------------------------------------
@@ -236,7 +237,8 @@ export default class Block{
         }
         
         //Checks if the robot would collide with a "wall"
-        const hitwall = this.checkForWall( object.position.clone().add(animation.GetTranslationVector()) ,map)
+        let predictedPosition = object.position.clone().add(animation.GetTranslationVector());
+        const hitwall = this.checkForWall( predictedPosition ,map);
         animation.ActivateAnimation(hitwall);
         // if (this.checkForWall( object.position.clone().add(new THREE.Vector3(anim_cache.distance.x, anim_cache.distance.z, 0)) ,map)){
         //     // console.log("Hit obsticle")
@@ -246,7 +248,9 @@ export default class Block{
         //     //The activation of the block will result in an animation, so default call here
         //     requestAnimationFrame(anim_translate);
         // }
-
+        if(this.checkForEnd(predictedPosition, map)){
+            throwConfetti();
+        }
         //Set a cooldown/timer to play the animations
         const self = this; //Since this function would not have access to the "this" keyword, use the variable "self" to reference the Block Object
         this.HighlightBlock(true); //Highlights the current block
@@ -275,22 +279,49 @@ export default class Block{
      */
     checkForWall(position, map){
         // console.log(position);
-        let size = map.length;
-        let center = Math.round(size/2);
-        let pos_x = center - 1 + Math.round(position.x / unit_multiplier); //Equal to the "column"
-        let pos_y = size - center + Math.round(-position.y / unit_multiplier); //Equal to the "row"
+        //Find X center
+        const width = map[0].length;
+        const center_x = Math.round(width/2);
+        //Find Y Center
+        const length = map.length;
+        const center_y = Math.round(length/2);
+        // let size = map.length;
+        // let center = Math.round(size/2);
+        let pos_x = center_x - 1 + Math.round(position.x / unit_multiplier); //Equal to the "column"
+        let pos_y = length - center_y + Math.round(-position.y / unit_multiplier); //Equal to the "row"
         
         //This checks if the object is outside of the "map"
         if (pos_y < 0 || 
             pos_x < 0 || 
-            pos_y > size-1 ||
-            pos_x > size -1 
+            pos_y > length -1 ||
+            pos_x > width -1 
         )
         {return true;}
         //Returns True if a wall is present
         //Returns False if there is no wall
         return map[pos_y][pos_x] == 1;
     }
+
+    /** Determines of the passed position intersects with a the end target position.
+     * @param {Object}         position    The position of the object, typically a Vector2 object is passed as the position parameter
+     * @param {Array[int][int]} map         A 2d integer array of values used to build the active "map" that the user navigates through
+     * @returns 
+     */
+    checkForEnd(position, map){
+        // console.log(position);
+        //Find X center
+        const width = map[0].length;
+        const center_x = Math.round(width/2);
+        //Find Y Center
+        const length = map.length;
+        const center_y = Math.round(length/2);
+        // let size = map.length;
+        // let center = Math.round(size/2);
+        let pos_x = center_x - 1 + Math.round(position.x / unit_multiplier); //Equal to the "column"
+        let pos_y = length - center_y + Math.round(-position.y / unit_multiplier); //Equal to the "row"
+        console.log(map[pos_y][pos_x] == 3);
+        return map[pos_y][pos_x] == 3;
+    }    
     /* Obsolite animation code
     TranslateBlock(object){
         if (this.direction === Direction.Forward){

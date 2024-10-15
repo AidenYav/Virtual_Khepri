@@ -1,6 +1,8 @@
 //Import of the custom Block Object
 import Block from "./Block.js";
 import radians_to_degrees, { degrees_to_radians, clamp } from "./MathFunctions.js";
+import MapBuilder , {activeMap, unit_multiplier, worldsCreated} from "./MapBuilder.js";
+
 
 console.log("Hello World!");
 //Initialize elements that will serve as a base for all event listeners.
@@ -30,7 +32,7 @@ const loader = new THREE.GLTFLoader();
 
 //Variables used to track/record the active map and current object model
 let no_camera_mode_active = false;
-let activeMap = undefined;
+// let activeMap = undefined;
 let model = undefined;
 let model_no_camera = undefined;
 //A dictionary container that will be used to control all blocks currently on screen
@@ -51,14 +53,16 @@ loader.load(
         model_no_camera = model.clone();
         //Base set up
         base.name = "base";
-        base.add( model );
+        // base.add( model );
         base_no_camera.name = "base_no_camera";
-        base_no_camera.add(model_no_camera);
+        // base_no_camera.add(model_no_camera);
         //World set up
-        loadWorld(base);
-        loadWorld(base_no_camera);
+        worldsCreated.push(new MapBuilder(base, model));
+        worldsCreated.push(new MapBuilder(base_no_camera, model_no_camera));
+        
         // console.log(base_no_camera)
         base_no_camera.visible =  false;
+        
     },
 
     undefined, 
@@ -83,7 +87,7 @@ loader.load(
 
 //Initailization of necessary constants
 const drag_offset = 20;
-const unit_multiplier = 2;
+
 const snapThreshold = 10; //in pixels
 //Initialization of variables used to temporarily store program states
 let last_clicked_block = undefined;
@@ -368,113 +372,7 @@ function rotate_y_axis(factor) {
 }
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------
-//------------------------------------------------------<World Building Functions>-------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------------------------------
-function loadWorld(base) {
-    //Creates new map
-    activeMap = [   [ 0 , 0 , 0 , 0 , 0 ],
-                    [ 1 , 1 , 1 , 1 , 0 ],
-                    [ 0 , 0 , 0 , 1 , 0 ],
-                    [ 0 , 1 , 1 , 1 , 0 ],
-                    [ 0 , 0 , 0 , 0 , 0 ] 
-                ]
-    //Builds the wals for the map
-    buildMap(activeMap, base)
 
-    //Creates some basic geometry
-    const icoSphere = new THREE.IcosahedronGeometry(1.0, 2);
-    const cube = new THREE.BoxGeometry(2,2,2,2,2,2);
-    //Creates some materials to use
-    const mat = new THREE.MeshBasicMaterial({
-        color: 0xccff
-    })
-    const wireMat = new THREE.MeshBasicMaterial({
-        color : 0xffffff,
-        wireframe: true
-    })
-    //Adds a wire "hitbox" to the model for visualization
-    //(Wire hitbox doesn't really matter though, may be removed in the future)
-    model.add(new THREE.Mesh(cube, wireMat));
-
-    // const mesh = new THREE.Mesh(icoSphere, mat);
-    // mesh.material = wireMat;
-
-    //Creates a plane used as a base plate
-    const planeGeo = new THREE.PlaneGeometry( 10, 10 , 5, 5);
-    const material = new THREE.MeshBasicMaterial( {color: 0xff00ff, side: THREE.DoubleSide, transparent : true, opacity : 0.5} );
-    // const wallMat = new THREE.MeshBasicMaterial({color: 0x00ff00, transparent : false, opacity: 0.5})
-    const wireframe = new THREE.WireframeGeometry( planeGeo );
-    const line = new THREE.LineSegments( wireframe );
-
-    const plane = new THREE.Mesh( planeGeo, material );
-    plane.add(line) //Adds wireframe lines to create a grid-like visualization that the user will be moving along
-    plane.name = "plane" //Naming for reference
-    base.add( plane ); //Adds plane to the actual world
-    plane.position.z -= 1.05;//An extra 0.05 to prevent clipping
-
-}
-
-function buildMap(map, objectBase){
-    let size = map.length;
-    let center = Math.round(size/2);
-    // console.log(center)
-    //Creates boarder
-    boarderGenerator(size, objectBase)
-
-    //Creates interior map
-    for(let r = 0; r < size; r++){
-        for(let c = 0; c < size; c++){
-            if (map[r][c] != 0){
-                let wall = createWall();
-                wall.position.x = (c - center + 1) * unit_multiplier
-                wall.position.y = (center - r - 1) * unit_multiplier
-                // console.log(wall.position.x, wall.position.y)
-                objectBase.add(wall);
-            }
-        }
-    }
-}
-
-function createWall(){
-    const cube = new THREE.BoxGeometry(2,2,2,2,2,2);
-    const wallMat = new THREE.MeshBasicMaterial({
-        color: 0xaaaaaa, 
-        transparent : false, 
-        opacity: 0.5
-
-    });
-    const wireframe = new THREE.WireframeGeometry( cube );
-    const line = new THREE.LineSegments( wireframe );
-    
-    const wall = new THREE.Mesh(cube, wallMat);
-    wall.add(line);
-    return wall
-}
-
-function boarderGenerator(size, objectBase){
-    const center = Math.round(size/2);
-    for(let x=-1; x < size + 1; x++){
-        let wall = createWall();
-        wall.position.x = (x - center + 1) * unit_multiplier
-        wall.position.y = center * unit_multiplier
-        objectBase.add(wall);
-        let wall2 = createWall();
-        wall2.position.x = (x - center + 1) * unit_multiplier
-        wall2.position.y = -center * unit_multiplier
-        objectBase.add(wall2);
-    }
-    for(let y=0; y < size+1; y++ ){
-        let wall = createWall();
-        wall.position.x = center * unit_multiplier
-        wall.position.y = (center - y) * unit_multiplier
-        objectBase.add(wall);
-        let wall2 = createWall();
-        wall2.position.x = -center * unit_multiplier
-        wall2.position.y = (center - y) * unit_multiplier
-        objectBase.add(wall2);
-    }
-}
 
 /*Moved/integrated into Block.js
 function checkForWall(object, map){
@@ -568,30 +466,114 @@ window.resetObject = function(){
     model_no_camera.position.set(0,0,1);
     model_no_camera.rotation.set(-Math.PI/2, 0 ,0);
 }
-window.toggleCamera = function(){
-    const video = document.querySelector('video');
+// window.toggleCamera = function(){
+//     const video = document.querySelector('video');
 
-    if (video.srcObject) {
-        // Stop all video tracks
-        video.srcObject.getTracks().forEach(track => track.stop());
-        video.srcObject = null;
-        no_camera_mode_active = true;
+//     if (video.srcObject) {
+//         // Stop all video tracks
+//         video.srcObject.getTracks().forEach(track => track.stop());
+//         video.srcObject = null;
+//         no_camera_mode_active = true;
 
-        base_no_camera.visible = true;
-        base.visible = false;
+//         base_no_camera.visible = true;
+//         base.visible = false;
         
 
-      } else {
-        // Restart the camera
-        navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
-          video.srcObject = stream;
-          no_camera_mode_active = false;
+//       } else {
+//         // Restart the camera
+//         navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+//           video.srcObject = stream;
+//           no_camera_mode_active = false;
             
-          base_no_camera.visible = false;
-          base.visible = true;
+//           base_no_camera.visible = false;
+//           base.visible = true;
 
-        });
+//         });
+//     }
+// }
+// window.switchCamera = function(){
+//     const devices = navigator.mediaDevices.enumerateDevices();
+//     const videoDevices = devices.filter(device => device.kind === 'videoinput');
+//     if (videoDevices.length < 2) {
+//         return;
+//     }   
+
+//     const newDeviceId = videoDevices.find(device => device.deviceId !== currentDeviceId)?.deviceId;
+//     if (newDeviceId) {
+//         startCamera(newDeviceId);
+//     }
+// }
+
+//Create some global variables for the camera
+
+let video = null;
+let currentStream = null;
+let currentDeviceId = null;
+
+// Function to start the camera
+async function startCamera(deviceId) {
+  if (currentStream) {
+    currentStream.getTracks().forEach(track => track.stop());
+  }
+  
+  const constraints = {
+    video: {
+      deviceId: deviceId ? { exact: deviceId } : undefined
+    }
+  };
+
+  const stream = await navigator.mediaDevices.getUserMedia(constraints);
+  video.srcObject = stream;
+  currentStream = stream;
+  currentDeviceId = deviceId;
+  no_camera_mode_active = false;
+  base_no_camera.visible = false;
+  base.visible = true;
+}
+
+// Function to stop the camera
+function stopCamera(newCurrentStream) {
+  if (newCurrentStream) {
+    newCurrentStream.getTracks().forEach(track => track.stop());
+    video.srcObject = null;
+    currentStream = null;
+    currentDeviceId = null;
+    no_camera_mode_active = true;
+    base_no_camera.visible = true;
+    base.visible = false;
+  }
+}
+
+// Function to toggle between available cameras
+async function switchCamera() {
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  const videoDevices = devices.filter(device => device.kind === 'videoinput');
+  
+  if (videoDevices.length < 2) {
+    return;
+  }
+
+  const newDeviceId = videoDevices.find(device => device.deviceId !== currentDeviceId)?.deviceId;
+  if (newDeviceId) {
+    await startCamera(newDeviceId);
     }
 }
 
+window.toggleCamera = function(){
+    video = document.querySelector('video');
+    let newCurrentStream = currentStream == null ? video.srcObject : currentStream;
+    let newCurrentDeviceId = video.deviceId;
+    if (video.srcObject != null){
+        stopCamera(newCurrentStream);
+        console.log("stop");
+    }
+    else{
+        startCamera();
+        console.log("start");
+    }
+}
 
+window.switchCam = function(){
+    video = document.querySelector('video');
+    switchCamera();
+}
