@@ -288,7 +288,7 @@ hammer.on("panleft panright panup pandown tap press pinch pinchend", function(ev
         //At this point, processed scale can take in other constraints such as clamps
         processedScale = clamp(processedScale, 0.1, 5);
         if (no_camera_mode_active){
-            base_no_camera.set(processedScale, processedScale, processedScale);
+            base_no_camera.scale.set(processedScale, processedScale, processedScale);
         }
         else{
             base.scale.set(processedScale,  processedScale,  processedScale);
@@ -573,7 +573,6 @@ async function switchCamera() {
 window.toggleCamera = function(){
     video = document.querySelector('video');
     let newCurrentStream = currentStream == null ? video.srcObject : currentStream;
-    let newCurrentDeviceId = video.deviceId;
     if (video.srcObject != null){
         stopCamera(newCurrentStream);
         console.log("stop");
@@ -587,4 +586,18 @@ window.toggleCamera = function(){
 window.switchCam = function(){
     video = document.querySelector('video');
     switchCamera();
+}
+
+window.zoom = function(scalar){
+    const scaleRate = 0.1;
+    if (no_camera_mode_active){
+        let processedScale = base_no_camera.scale.x + scaleRate * scalar;
+        processedScale = clamp(processedScale, 0.1, 5);
+        base_no_camera.scale.set(processedScale, processedScale, processedScale);
+    }
+    else{
+        let processedScale = base.scale.x + scaleRate * scalar;
+        processedScale = clamp(processedScale, 0.1, 5);
+        base.scale.set(processedScale,  processedScale,  processedScale);
+    }
 }

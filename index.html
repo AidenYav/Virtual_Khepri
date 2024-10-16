@@ -31,10 +31,10 @@
     <script type = "module" src ="MathFunctions.js"></script>
     <script type = "text/javascript" src="UserInterface.js"></script>
 </head>
-<body id="screen">
+<body>
     
     <!-- Create an AR scene -->
-    <a-scene embedded arjs=" sourceType: webcam; debugUIEnabled: false; trackingMethod: best;" >
+    <a-scene embedded arjs=" sourceType: webcam; debugUIEnabled: false; trackingMethod: best;" id="screen">
         <!-- Uses a custom marker to display the model -->
         <a-marker preset="custom" type="pattern" url="Markers/pattern-Triangle.patt">
 
@@ -60,6 +60,8 @@
             <button onclick="toggleCamera()"    class="cameraButtons" >Toggle Camera Mode</button>
             <button onclick="switchCam()"       class="cameraButtons">Switch Cameras</button>
             <button onclick="toggleLevelMenu()" class="cameraButtons">Levels</button>
+            <button onclick="zoom(1)"           class="cameraButtons">Zoom In</button>
+            <button onclick="zoom(-1)"           class="cameraButtons">Zoom Out</button>
             <!-- <button onclick="throwConfetti()">Confetti</button> Testing purposes only -->
         </div>
         <p id="icon" onclick="toggleBar()">^</p>

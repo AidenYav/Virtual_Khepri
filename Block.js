@@ -319,7 +319,6 @@ export default class Block{
         // let center = Math.round(size/2);
         let pos_x = center_x - 1 + Math.round(position.x / unit_multiplier); //Equal to the "column"
         let pos_y = length - center_y + Math.round(-position.y / unit_multiplier); //Equal to the "row"
-        console.log(map[pos_y][pos_x] == 3);
         return map[pos_y][pos_x] == 3;
     }    
     /* Obsolite animation code
