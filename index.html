@@ -68,16 +68,20 @@
         <div class="hidden" id="workspace_area"><!-- This is the container for the entire workspace area  -->
             
             <div  id="button_container" >
-                    <h4 class="text_info">These are the available blocks you have to complete this small puzzle! Try dragging the blocks into the space on the right!</h4> 
+                    <h4 class="text_info">These are the available blocks you have to complete this small puzzle! Try dragging the blocks into the space on the right!</h4>
                 <br>
-                    <button  class="spawner" data-type="Compiler" onclick="compile()">Run</button>
-                    <!-- <button  onclick="deleteBlock()">Delete</button> -->
                     <button  onclick="clearBlocks()">Clear All Blocks</button>
-                    <button  onclick="resetObject()">Reset</button>
+                    <button  onclick="resetObject()">Reset</button> 
+                <br>
+
+                    <button  class="spawner" data-type="Compiler" onclick="compile()" id="compiler">Run</button>
+                    <!-- <button  onclick="deleteBlock()">Delete</button> -->
+                    
                 <br>
 
                     <button  class="spawner" data-direction="Forward"   data-magnitude="1"   data-type="Translation" >Forward</button>
                     <button  class="spawner" data-direction="Forward"   data-magnitude="-1"  data-type="Translation" >Backward</button>
+                <br>
                     <button  class="spawner" data-direction="Left"      data-magnitude="-1"  data-type="Translation" >Left</button>
                     <button  class="spawner" data-direction="Left"      data-magnitude="1"   data-type="Translation" >Right</button>
                 <br>

@@ -10,7 +10,7 @@ export let activeMap =     [
 ];
 export const unit_multiplier = 2;
 
-let activeMapIndex = 0;
+export let activeMapIndex = 0;
 export let worldsCreated = new Array();
 export default class MapBuilder{
 
@@ -198,10 +198,11 @@ export default class MapBuilder{
 }
 
 
-function loadMap(index){
+export function loadMap(index){
     if (index < MapData.length){
         // console.log("Loading Map",index);
-        activeMap = MapData[index];
+        activeMapIndex = index;
+        activeMap = MapData[activeMapIndex];
         reloadWorld();
         return true;
     }

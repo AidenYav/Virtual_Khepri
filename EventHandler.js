@@ -1,7 +1,7 @@
 //Import of the custom Block Object
 import Block from "./Block.js";
 import radians_to_degrees, { degrees_to_radians, clamp } from "./MathFunctions.js";
-import MapBuilder , {activeMap, unit_multiplier, worldsCreated} from "./MapBuilder.js";
+import MapBuilder , {activeMap, unit_multiplier, worldsCreated, loadMap, activeMapIndex} from "./MapBuilder.js";
 
 
 console.log("Hello World!");
@@ -470,12 +470,13 @@ window.clearBlocks = function(){
 //Resets both objects
 window.resetObject = function(){
     // compiler.ResetObject();
+    loadMap(activeMapIndex)
     
-    model.position.set(0,0,1);
-    model.rotation.set(-Math.PI/2, 0 ,0);
+    // model.position.set(0,0,1);
+    // model.rotation.set(-Math.PI/2, 0 ,0);
 
-    model_no_camera.position.set(0,0,1);
-    model_no_camera.rotation.set(-Math.PI/2, 0 ,0);
+    // model_no_camera.position.set(0,0,1);
+    // model_no_camera.rotation.set(-Math.PI/2, 0 ,0);
 }
 // window.toggleCamera = function(){
 //     const video = document.querySelector('video');
