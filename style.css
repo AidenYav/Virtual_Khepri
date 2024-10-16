@@ -1,7 +1,13 @@
 /*Disables Scrolling*/
 body, html {
     overflow: hidden;
-  }
+
+    touch-action: none;
+
+}
+#scene{
+    touch-action: none;
+}
   
 
 #bottom_bar{

@@ -266,7 +266,7 @@ function create_draggable_block(source_block){
 //However, it does have the function of pinch zooming to increase/decrease the size of the scene (mobile only)
 
 //Initialization of constant values
-const rotationSpeed = 0.01; // Adjust as needed
+const rotationSpeed = 0.05; // Adjust as needed
 const doubleTapThreshold = 300; // Maximum time (in milliseconds) between taps for double tap
 const max_x_rotation = degrees_to_radians(45); //Maximum rotation on the x-axis relative to it's initial start rotation/x_offset
 const x_offset = degrees_to_radians(0); //The starting rotation of the object
@@ -323,8 +323,8 @@ hammer.on("panleft panright panup pandown tap press pinch pinchend", function(ev
     }
     
     if ((ev.type == "swipe" || ev.type.startsWith("pan"))){
-        const currentTime = Date.now()
-        if (currentTime - lastRotateTime < 10){
+        // const currentTime = Date.now()
+        // if (currentTime - lastRotateTime < 10){
             
             switch(ev.direction){
                 case Hammer.DIRECTION_LEFT:
@@ -344,8 +344,8 @@ hammer.on("panleft panright panup pandown tap press pinch pinchend", function(ev
                 default:
                     break;
             }
-        }
-        lastRotateTime = currentTime;
+        // }
+        // lastRotateTime = currentTime;
     }
     
     
@@ -588,16 +588,12 @@ window.switchCam = function(){
     switchCamera();
 }
 
-window.zoom = function(scalar){
-    const scaleRate = 0.1;
-    if (no_camera_mode_active){
-        let processedScale = base_no_camera.scale.x + scaleRate * scalar;
-        processedScale = clamp(processedScale, 0.1, 5);
-        base_no_camera.scale.set(processedScale, processedScale, processedScale);
-    }
-    else{
-        let processedScale = base.scale.x + scaleRate * scalar;
-        processedScale = clamp(processedScale, 0.1, 5);
-        base.scale.set(processedScale,  processedScale,  processedScale);
-    }
-}
+// window.zoom = function(scalar){
+
+//     if (no_camera_mode_active){
+        
+//     }
+//     else{
+
+//     }
+// }
