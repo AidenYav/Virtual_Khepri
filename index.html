@@ -31,10 +31,10 @@
     <script type = "module" src ="MathFunctions.js"></script>
     <script type = "text/javascript" src="UserInterface.js"></script>
 </head>
-<body>
+<body id="screen">
     
     <!-- Create an AR scene -->
-    <a-scene embedded arjs=" sourceType: webcam; debugUIEnabled: false; trackingMethod: best;" id="screen">
+    <a-scene embedded arjs=" sourceType: webcam; debugUIEnabled: false; trackingMethod: best;" >
         <!-- Uses a custom marker to display the model -->
         <a-marker preset="custom" type="pattern" url="Markers/pattern-Triangle.patt">
 
