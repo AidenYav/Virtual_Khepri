@@ -322,7 +322,7 @@ hammer.on("panleft panright panup pandown tap press pinch pinchend", function(ev
         console.log(radians_to_degrees(base_no_camera.rotation.y));
     }
     
-    if (no_camera_mode_active && (ev.type == "swipe" || ev.type.startsWith("pan"))){
+    if ((ev.type == "swipe" || ev.type.startsWith("pan"))){
         const currentTime = Date.now()
         if (currentTime - lastRotateTime < 10){
             
@@ -356,19 +356,30 @@ function rotate_x_axis(factor) {
     // console.log(y_rotation % 180)
     // factor *= y_rotation % 360 < 180 ?  1 : -1;
         
-    base_no_camera.rotation.x = clamp(base_no_camera.rotation.x + rotationSpeed * factor, 
-        x_offset - max_x_rotation, 
-        x_offset + max_x_rotation)
+    if (no_camera_mode_active){
+        base_no_camera.rotation.x = clamp(base_no_camera.rotation.x + rotationSpeed * factor, 
+            x_offset - max_x_rotation, 
+            x_offset + max_x_rotation)
+    }
+    else{
+        base.rotation.x += rotationSpeed * factor;
+    }
+    
 }
 
 function rotate_y_axis(factor) {
     let rotation = model.rotation.y;
-    rotation += rotationSpeed * factor
+    rotation += rotationSpeed * factor;
     // rotation %= Math.PI * 2
     // base.scale.addScalar(rotation);
     // console.log(typeof(base.scale.x));
     // console.log(Number(base.scale.x));
-    base_no_camera.rotation.y += rotationSpeed * factor;
+    if (no_camera_mode_active){
+        base_no_camera.rotation.y += rotationSpeed * factor;
+    }
+    else{
+        base.rotation.z += rotationSpeed * factor;
+    }
 }
 
 

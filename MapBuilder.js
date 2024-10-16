@@ -41,7 +41,7 @@ export default class MapBuilder{
         //     color: 0xccff
         // })
         const wireMat = new THREE.MeshBasicMaterial({
-            color : 0xffffff,
+            color : 0x000000,
             wireframe: true
         })
         //Adds a wire "hitbox" to the model for visualization
@@ -58,11 +58,14 @@ export default class MapBuilder{
         // const wallMat = new THREE.MeshBasicMaterial({color: 0x00ff00, transparent : false, opacity: 0.5})
         const wireframe = new THREE.WireframeGeometry( planeGeo );
         const line = new THREE.LineSegments( wireframe );
-
+        
         const plane = new THREE.Mesh( planeGeo, material );
+        const wire = new THREE.Mesh( planeGeo, wireMat);
         plane.add(line) //Adds wireframe lines to create a grid-like visualization that the user will be moving along
         plane.name = "plane" //Naming for reference
+        this.base.add(wire);
         this.base.add( plane ); //Adds plane to the actual world
+        wire.position.z -= 1;
         plane.position.z -= 1.05;//An extra 0.05 to prevent clipping
 
     }
@@ -191,7 +194,7 @@ export default class MapBuilder{
 
 function loadMap(index){
     if (index < MapData.length){
-        console.log("Loading Map",index);
+        // console.log("Loading Map",index);
         activeMap = MapData[index];
         reloadWorld();
         return true;
@@ -204,8 +207,8 @@ function loadMap(index){
 function createMapButtons(){
     const parent = document.getElementById("levelMenu");
     MapData.forEach((item, index) => {
-        console.log("Item at index index:",index);
-        console.log(item);
+        // console.log("Item at index index:",index);
+        // console.log(item);
         const button = document.createElement("button");
         button.className = "levelButton";
         button.textContent = index + 1;
@@ -230,7 +233,7 @@ async function loadJSON() {
     try {
     const response = await fetch('maps.json');
     MapData = await response.json();
-    console.log(MapData);
+    // console.log(MapData);
     } catch (error) {
     console.error('Error loading JSON:', error);
     }
