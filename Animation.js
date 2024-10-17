@@ -149,7 +149,7 @@ export default class Animation{
         //Calculate progress on animation based on time passed
         const elapsed = (timeStamp - this.start);
         //This completion rate can be manipulated in the future to mimic de/acceleration
-        let amplitude = 0.1; //Modifier to mimic hitting a wall
+        let amplitude = 0.075; //Modifier to mimic hitting a wall
         //Sine type rate
         const completion_rate = Math.min( -amplitude * Math.sin(2 * Math.PI * (elapsed/animation_duration) + Math.PI/2)  + amplitude, 1);
 

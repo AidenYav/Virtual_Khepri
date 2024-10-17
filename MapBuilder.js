@@ -198,8 +198,8 @@ export default class MapBuilder{
 }
 
 
-export function loadMap(index){
-    if (index < MapData.length){
+export function loadMap(index, initLoad = false){
+    if (!initLoad && index < MapData.length){
         // console.log("Loading Map",index);
         activeMapIndex = index;
         activeMap = MapData[activeMapIndex];
@@ -228,7 +228,7 @@ function createMapButtons(){
 }
 
 function reloadWorld(){
-    worldsCreated.forEach((world, index) => {
+    worldsCreated.forEach((world) => {
         // console.log(world);
         world.loadWorld();
     });
@@ -245,12 +245,15 @@ async function loadJSON() {
     console.error('Error loading JSON:', error);
     }
     createMapButtons();
-    loadMap(0);
+    loadMap(0, true);
 
 }
 window.onload = function(){
 
   // Call the function to load JSON data
   loadJSON();
-  
+    var event = new CustomEvent('dataLoaded', {
+        detail: { message: 'Data successfully loaded' }
+    });
+    window.dispatchEvent(event);
 }

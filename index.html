@@ -40,7 +40,7 @@
 
             <!-- Creates an object using the models folder and displays it on the screen -->
             <a-box position="0 0 0" scale="0.5 0.5 0.5" rotation="-90 0 0" material="opacity: 0;" id="base"></a-box>
-            <!-- <a-entity gltf-model="Models/Pyramid.glb" position="0 0 0" scale="0.4 0.4 0.4" rotation = "0 180 0" id="model"></a-entity> -->
+            <!-- <a-entity gltf-model="Models/KhepriAtHome.glb" position="0 0 0" scale="0.15 0.15 0.15" rotation = "0 180 0" id="model"></a-entity> -->
         </a-marker>
         <a-box position="0 0 -10" scale="0.5 0.5 0.5" rotation="0 0 0" material="opacity: 0;" id="base_no_camera" ></a-box>
         <!-- Display the camera feed  -->
@@ -60,6 +60,7 @@
             <button onclick="toggleCamera()"    class="cameraButtons" >Toggle Camera Mode</button>
             <button onclick="switchCam()"       class="cameraButtons">Switch Cameras</button>
             <button onclick="toggleLevelMenu()" class="cameraButtons">Levels</button>
+            <button onclick="compile()"         class="cameraButtons compiler">Run Code</button>
             <!-- <button onclick="zoom(1)"           class="cameraButtons">Test Pos</button>
             <button onclick="zoom(-1)"           class="cameraButtons">Test Neg</button> -->
             <!-- <button onclick="throwConfetti()">Confetti</button> Testing purposes only -->
@@ -74,7 +75,7 @@
                     <button  onclick="resetObject()">Reset</button> 
                 <br>
 
-                    <button  class="spawner" data-type="Compiler" onclick="compile()" id="compiler">Run</button>
+                    <button  class="spawner compiler" data-type="Compiler" onclick="compile()" >Run</button>
                     <!-- <button  onclick="deleteBlock()">Delete</button> -->
                     
                 <br>
@@ -88,7 +89,7 @@
                     <button  class="spawner" data-direction="Clockwise" data-magnitude="-45" data-type="Rotation"    >Turn Left</button>
                     <button  class="spawner" data-direction="Clockwise" data-magnitude="45"  data-type="Rotation"    >Turn Right</button>
                 <br>
-
+                    <h4 class="text_info">Here is an extra challenge modifier! Uncheck the box below to see what happens!</h4>
                     <input checked type="checkbox" id="FC_checkbox">
                     <label for="FC_checkbox">Field Centric Active</label>
             </div>

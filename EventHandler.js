@@ -39,38 +39,48 @@ let model_no_camera = undefined;
 let block_dictionary = {counter : 0};
 
 //Loads the saved 3d model used to move.
-loader.load( 
-    './Models/Pyramid.glb', 
+// Add an event listener to listen for the custom event
+window.addEventListener('dataLoaded', function(event) {
+    // console.log('Custom event received:', event.detail.message);
 
-    function ( gltf ) {
+        // Perform the desired action after the event is triggered
+    loader.load( 
+        './Models/KhepriAtHome3.glb', 
 
-        //Model set up
-        model = gltf.scene;
-        model.name = "robot";
-        model.scale.multiplyScalar(0.6);
-        model.position.z += 1;
-        model.rotation.x -= degrees_to_radians(90);
-        model_no_camera = model.clone();
-        //Base set up
-        base.name = "base";
-        // base.add( model );
-        base_no_camera.name = "base_no_camera";
-        // base_no_camera.add(model_no_camera);
-        //World set up
-        worldsCreated.push(new MapBuilder(base, model));
-        worldsCreated.push(new MapBuilder(base_no_camera, model_no_camera));
-        
-        // console.log(base_no_camera)
-        base_no_camera.visible =  false;
-        
-    },
+        function ( gltf ) {
 
-    undefined, 
+            //Model set up
+            model = gltf.scene;
+            model.name = "robot";
+            model.scale.multiplyScalar(0.3);
+            model.position.z += 1;
+            model.rotation.x += degrees_to_radians(90);
+            // model.rotation.y += degrees_to_radians(90);
+            model_no_camera = model.clone();
+            // console.log(model);
+            //Base set up
+            base.name = "base";
+            // base.add( model );
+            base_no_camera.name = "base_no_camera";
+            // base_no_camera.add(model_no_camera);
+            //World set up
+            worldsCreated.push(new MapBuilder(base, model));
+            worldsCreated.push(new MapBuilder(base_no_camera, model_no_camera));
+            // console.log("Created map");
+            // console.log(base_no_camera)
+            base_no_camera.visible =  false;
+            worldsCreated.forEach((world) => {
+                loadMap(0);
+            });
+        },
 
-    function ( error ) {
-	    console.error( error );
-    } 
-);
+        undefined, 
+
+        function ( error ) {
+            console.error( error );
+        } 
+    );
+});
 
 // const web_camera = document.getElementById("camera");
 
@@ -576,11 +586,11 @@ window.toggleCamera = function(){
     let newCurrentStream = currentStream == null ? video.srcObject : currentStream;
     if (video.srcObject != null){
         stopCamera(newCurrentStream);
-        console.log("stop");
+        // console.log("stop");
     }
     else{
         startCamera();
-        console.log("start");
+        // console.log("start");
     }
 }
 
