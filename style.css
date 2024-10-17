@@ -153,9 +153,28 @@ body, html {
     margin-top: 10%;
     margin-left: 5px;
     width: 90%;
-    max-width: 90%;
+    /* max-height: 90%; */
     aspect-ratio: 1/ 1;
     /* margin-right: 5%; */
     font-size: xx-large;
     border-radius: 10%;
+}
+
+@media (min-aspect-ratio: 4/7) {
+    /* Set your desired width when width > height 
+        width >= height*/
+
+    .levelButton {
+        
+      width: 90%; 
+      height: auto;
+    }
+  }
+   /* Set your desired width when height > width 
+      height >= width*/
+  @media (max-aspect-ratio: 4/7) {
+    .levelButton {
+      width: auto;
+      height: 90%;
+    }
 }
