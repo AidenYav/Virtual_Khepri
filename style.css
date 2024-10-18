@@ -133,9 +133,10 @@ body, html {
     overflow: auto;
 
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    grid-template-rows: repeat(2,-50%);
-    grid-gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+    /* grid-template-rows: repeat(2,-50%); */
+    grid-row-gap: 5%;
+    /* grid-column: 5%; */
 
     width: 70%;
     height: 40%;
@@ -169,9 +170,10 @@ body, html {
       height: auto;
     }
   }
-   /* Set your desired width when height > width 
+   
+@media (max-aspect-ratio: 4/7) {
+    /* Set your desired width when height > width 
       height >= width*/
-  @media (max-aspect-ratio: 4/7) {
     .levelButton {
       width: auto;
       height: 70%;
