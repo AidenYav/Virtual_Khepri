@@ -51,6 +51,7 @@ body, html {
     top: 0; 
     width: 50%;
     height: 100%;
+    overflow-y: auto;
     /* background-color: white; */
     border: 1px solid black
 }
@@ -89,6 +90,9 @@ body, html {
     background-color: rgb(119, 255, 119);
 }
 
+.spacer{
+    height: 30px;
+}
 
 .command{
     
@@ -100,7 +104,6 @@ body, html {
     color: black;
     outline: auto;
 }
-
 
 .cameraButtonContianers{
     position: absolute;
