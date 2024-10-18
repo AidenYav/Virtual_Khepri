@@ -51,10 +51,10 @@ body, html {
     top: 0; 
     width: 50%;
     height: 100%;
-    overflow-y: auto;
     /* background-color: white; */
     border: 1px solid black
 }
+
 
 #editor_view{
     /* background-color: white; */

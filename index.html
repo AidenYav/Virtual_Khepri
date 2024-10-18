@@ -69,7 +69,7 @@
         <div class="hidden" id="workspace_area"><!-- This is the container for the entire workspace area  -->
             
             <div  id="button_container" >
-                    <h4 class="text_info">These are the available blocks you have to complete this small puzzle! Try dragging the blocks into the space on the right!</h4>
+                    <h5 class="text_info">These are the available blocks you have to complete this small puzzle! Try dragging the blocks into the space on the right!</h4>
                 <br>
                     <button  onclick="clearBlocks()">Clear All Blocks</button>
                     <button  onclick="resetObject()">Reset</button> 
@@ -89,17 +89,19 @@
                     <button  class="spawner" data-direction="Clockwise" data-magnitude="-45" data-type="Rotation"    >Turn Left</button>
                     <button  class="spawner" data-direction="Clockwise" data-magnitude="45"  data-type="Rotation"    >Turn Right</button>
                 <br>
-                    <h4 class="text_info">Here is an extra challenge modifier! Uncheck the box below to see what happens!</h4>
-                    <input checked type="checkbox" id="FC_checkbox">
-                    <label for="FC_checkbox">Field Centric Active</label>
-                <!-- Buffer Breaks -->
-                <!-- Spacer -->
-                <div class="spacer"></div>
+                <div class="challenges">
+                        <h5 class="text_info">Here is an extra challenge modifier! Uncheck the box below to see what happens!</h4>
+                        <input checked type="checkbox" id="FC_checkbox">
+                        <label for="FC_checkbox">Field Centric Active</label>
+                    <!-- Buffer Breaks -->
+                    <!-- Spacer -->
+                    <div class="spacer"></div>
+                </div>
             </div>
             
 
             <div  id="editor_view">
-                <h4 class="text_info">This is an work space. Drag the blocks on the side together to run your program!</h4> <br>
+                <h5 class="text_info">This is an work space. Drag the blocks on the side together to run your program!</h4> <br>
                 <!--  This will be the editor space? -->
                 <!-- <ol id="command_list">
                     <li><label class="command" id="start">Start</label></li>
