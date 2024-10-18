@@ -133,7 +133,7 @@ body, html {
     overflow: auto;
 
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     /* grid-template-rows: repeat(2,-50%); */
     grid-row-gap: 5%;
     /* grid-column: 5%; */
@@ -165,9 +165,9 @@ body, html {
         width >= height*/
 
     .levelButton {
-        
-      width: 70%; 
-      height: auto;
+        width: auto;
+      height: 70%;
+      
     }
   }
    
@@ -175,7 +175,7 @@ body, html {
     /* Set your desired width when height > width 
       height >= width*/
     .levelButton {
-      width: auto;
-      height: 70%;
+        width: 70%; 
+        height: auto;
     }
 }
