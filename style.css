@@ -135,7 +135,7 @@ body, html {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     /* grid-template-rows: repeat(2,-50%); */
-    grid-row-gap: 5%;
+    /* grid-row-gap: 5%; */
     /* grid-column: 5%; */
 
     width: 70%;
@@ -152,30 +152,30 @@ body, html {
 .levelButton{
     margin-top: 10%;
     margin-left: 5px;
-    width: 70%;
+    /* width: auto; */
     /* max-height: 90%; */
     aspect-ratio: 1/ 1;
     /* margin-right: 5%; */
     font-size: xx-large;
     border-radius: 10%;
 }
-/* 
+
 @media (min-aspect-ratio: 4/7) {
     /* Set your desired width when width > height 
-        width >= height /
+        width >= height */
 
     .levelButton {
-        width: auto;
-      height: 70%;
+        /* width: auto; */
+        height: 70%;
       
     }
   }
    
 @media (max-aspect-ratio: 4/7) {
     /* Set your desired width when height > width 
-      height >= width /
+      height >= width */
     .levelButton {
         width: 70%; 
-        height: auto;
+        /* height: auto; */
     }
-} */
+}
