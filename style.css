@@ -138,7 +138,7 @@ body, html {
     /* grid-row-gap: 5%; */
     /* grid-column: 5%; */
 
-    width: 70%;
+    width: 80%;
     height: 40%;
 
     top: 50%;
@@ -160,7 +160,7 @@ body, html {
     border-radius: 10%;
 }
 
-@media (min-aspect-ratio: 4/7) {
+@media (min-aspect-ratio: 4/8) {
     /* Set your desired width when width > height 
         width >= height */
 
@@ -171,7 +171,7 @@ body, html {
     }
   }
    
-@media (max-aspect-ratio: 4/7) {
+@media (max-aspect-ratio: 4/8) {
     /* Set your desired width when height > width 
       height >= width */
     .levelButton {
