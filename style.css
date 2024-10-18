@@ -159,10 +159,10 @@ body, html {
     font-size: xx-large;
     border-radius: 10%;
 }
-
+/* 
 @media (min-aspect-ratio: 4/7) {
     /* Set your desired width when width > height 
-        width >= height*/
+        width >= height /
 
     .levelButton {
         width: auto;
@@ -173,9 +173,9 @@ body, html {
    
 @media (max-aspect-ratio: 4/7) {
     /* Set your desired width when height > width 
-      height >= width*/
+      height >= width /
     .levelButton {
         width: 70%; 
         height: auto;
     }
-}
+} */
