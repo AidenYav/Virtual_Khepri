@@ -134,6 +134,7 @@ body, html {
 
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    /* grid-template-rows: repeat(auto-fit, 150px); */
     /* grid-template-rows: repeat(2,-50%); */
     /* grid-row-gap: 5%; */
     /* grid-column: 5%; */
@@ -152,6 +153,7 @@ body, html {
 .levelButton{
     margin-top: 10%;
     margin-left: 5px;
+    width: 50%;
     /* width: auto; */
     /* max-height: 90%; */
     aspect-ratio: 1/ 1;
@@ -160,12 +162,12 @@ body, html {
     border-radius: 10%;
 }
 
-@media (min-aspect-ratio: 4/8) {
+/* @media (min-aspect-ratio: 4/8) {
     /* Set your desired width when width > height 
-        width >= height */
+        width >= height /
 
     .levelButton {
-        /* width: auto; */
+        /* width: auto; /
         height: 70%;
       
     }
@@ -173,9 +175,9 @@ body, html {
    
 @media (max-aspect-ratio: 4/8) {
     /* Set your desired width when height > width 
-      height >= width */
+      height >= width /
     .levelButton {
         width: 70%; 
-        /* height: auto; */
+        /* height: auto; /
     }
-}
+} */
