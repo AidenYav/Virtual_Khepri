@@ -1,4 +1,4 @@
-Project Link: https://aidenyav.github.io/AR_Project/
+Project Link: https://aidenyav.github.io/Virtual_Khepri/
 
 ---
 
