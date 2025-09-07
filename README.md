@@ -1,5 +1,10 @@
 Project Link: https://aidenyav.github.io/Virtual_Khepri/
+Use this image below is the marker for the Augmented Reality system. Otherwise, switch to the non-camera mode.
+![Diagram](https://github.com/AidenYav/Virtual_Khepri/blob/main/Markers/pattern-Triangle.png)
 
+Virtual_Khepri is a prototype block code system designed for children to practice programming logic.
+Originally this was intended as an alternative activity for Hazen "Scarab" Robotics to utilize at out reach events.
+Note: This project no longer recieves updates despite many known bugs existing.
 ---
 
 Written 10/28/2024
